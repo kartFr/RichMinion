@@ -634,7 +634,7 @@ AppearanceSection:CreateToggle({
     callbackOnCreation = true,
     callback = function(boolean)
         settings.shadows = boolean
-        
+
         if boolean then
             shadowConnection = game.Lighting:GetPropertyChangedSignal("GlobalShadows"):Connect(function()
                 game.Lighting.GlobalShadows = boolean
@@ -665,7 +665,7 @@ AppearanceSection:CreateToggle({
         
         if boolean then
             dayBright = game.Lighting:GetPropertyChangedSignal("Brightness"):Connect(function()
-                game.Lighting.Brightness = 1.5
+                game.Lighting.Brightness = 1
             end)
 
             dayTime = game.Lighting:GetPropertyChangedSignal("ClockTime"):Connect(function()
@@ -677,8 +677,13 @@ AppearanceSection:CreateToggle({
             end)
 
             game.Lighting.ShadowSoftness = 0.5
-            game.Lighting.Brightness = 1.5
+            game.Lighting.Brightness = 1
             game.Lighting.ClockTime = 12
+        else
+            dayBright:Disconnect()
+            dayTime:Disconnect()
+            soft:Disconnect()
+            game.Lighting.ClockTime = 24
         end
     end
 })
