@@ -72,7 +72,7 @@ local spellPrecentages = {
 local resetOnDeath = {}
 local proxy = {}
 
-local fileName = "minionFinal1.txt"
+local fileName = "minionFinal2.txt"
 if writefile then
     if isfile(fileName) then
         proxy = HttpService:JSONDecode(readfile(fileName))
@@ -116,7 +116,8 @@ if writefile then
             backstabDistance = 1,
             fullbright = false,
             playerAlert = false,
-            waterclip = false
+            waterclip = false,
+            spellhelp = false,
         }
     end
 end
@@ -454,7 +455,8 @@ local spellCheck
 
 VisualSection:CreateToggle({
     name = "Spell Helper",
-    default = false,
+    default = settings.spellhelp,
+    callbackOnCreation = true
     callback = function(boolean)
         if boolean then
             spellCheck = game.RunService.Heartbeat:Connect(function()
@@ -1404,12 +1406,13 @@ resetOnDeath.autopickup = TrinketSection:CreateToggle({
 
 local IngredientSection = ItemsSection:CreateSection("Ingredients")
 
+local ingredientConnection
 resetOnDeath.autopickup = IngredientSection:CreateToggle({
     name = "Auto Pickup Ingredients",
     default = false,
     callback = function(boolean)
         if boolean then
-            pickup = RunService.Heartbeat:Connect(function()
+            ingredientConnection = RunService.Heartbeat:Connect(function()
                 local trinkets = game.Workspace:GetPartBoundsInRadius(Players.LocalPlayer.Character.Torso.Position, 12, overlapParams)
 
                 if trinkets[1] then
@@ -1421,9 +1424,9 @@ resetOnDeath.autopickup = IngredientSection:CreateToggle({
                 end
             end)
         else
-            if pickup then
-                pickup:Disconnect()
-                pickup = false
+            if ingredientConnection then
+                ingredientConnection:Disconnect()
+                ingredientConnection = false
             end
         end
     end
