@@ -458,6 +458,8 @@ VisualSection:CreateToggle({
     default = settings.spellhelp,
     callbackOnCreation = true,
     callback = function(boolean)
+        settings.spellhelp = boolean
+
         if boolean then
             spellCheck = game.RunService.Heartbeat:Connect(function()
                 if Players.LocalPlayer.Character then
@@ -512,7 +514,7 @@ VisualSection:CreateToggle({
                     if spellPrecentages[currentTool.Name].Normal then
                         local normalPrecentage = spellPrecentages[currentTool.Name].Normal
                         normalGui = Instance.new("Frame")
-                        normalGui.BackgroundTransparency = 0.5
+                        normalGui.BackgroundTransparency = 0.9
                         normalGui.BorderSizePixel = 0
                         normalGui.ZIndex = 1000
                         normalGui.BackgroundColor3 = Color3.fromHex(settings.normalColor)
@@ -526,7 +528,7 @@ VisualSection:CreateToggle({
                         local SnapPrecentage = spellPrecentages[currentTool.Name].Snap
                         snapGui = Instance.new("Frame")
                         snapGui.ZIndex = 1000
-                        snapGui.BackgroundTransparency = 0.5
+                        snapGui.BackgroundTransparency = 0.9
                         snapGui.BorderSizePixel = 0
                         snapGui.AnchorPoint = Vector2.new(.5, 0)
                         snapGui.BackgroundColor3 = Color3.fromHex(settings.snapColor)
