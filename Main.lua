@@ -385,6 +385,13 @@ PlayerSection:CreateToggle({
     end
 })
 
+PlayerSection:CreateButton({
+    name = "Reset",
+    callback = function()
+        game.Players.LocalPlayer.Character:BreakJoints()
+    end
+})
+
 local StatusSection = CharacterTab:CreateSection("Status Effects")
 
 StatusSection:CreateToggle({
