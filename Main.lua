@@ -799,6 +799,8 @@ AppearanceSection:CreateToggle({
             fogConnection = game.Lighting:GetPropertyChangedSignal("FogEnd"):Connect(function()
                 game.Lighting.FogEnd = math.huge
             end)
+
+            game.Lighting.FogEnd = math.huge
         else
             if fogConnection then
                 fogConnection:Disconnect()
