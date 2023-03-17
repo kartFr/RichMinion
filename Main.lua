@@ -1,4 +1,4 @@
-local version = "0.01"
+local version = "0.02"
 repeat task.wait() until game:IsLoaded() 
 repeat task.wait() until game.Players.LocalPlayer.Character
 
@@ -15,7 +15,7 @@ local Gui = Library.new("Karts' poorest minion gui")
 
 local camera = game.Workspace.CurrentCamera
 local spellPrecentages = {
-    Gate = {Snap = {.8, .9}},
+    Gate = {Snap = {.75, .85}},
     Ignis = {Snap = {.50, .60}, Normal = {.85, .95}},
     Gelidus = {Normal = {.80, .90}, Snap = {.60, 1}},
     Viribus = {Snap = {.60, .75}, Normal = {.25, .35}},
@@ -110,7 +110,9 @@ local defaultSettings = {
     spellhelp = false,
     playerDistance = false,
     chatlogIlluColor = Color3.fromRGB(0, 150, 255):ToHex(),
-    version = version
+    version = version,
+    phoenixFlowerColor = "#960000",
+    phoenixFlower = false,
 }
 local resetOnDeath = {}
 local proxy = {}
@@ -942,7 +944,8 @@ local espHolder = {
     ["white"] = {},
     ["howler"] = {},
     ["ma"] = {},
-    ["azael"] = {}
+    ["azael"] = {},
+    ["phoenixFlower"] = {}
 }
 local espEvent
 
@@ -967,48 +970,64 @@ local function applyEsp(instance)
     end
     
     if instance:FindFirstChild("Attachment") and instance.Attachment:FindFirstChild("ParticleEmitter") and instance.Attachment.ParticleEmitter.Texture == "rbxassetid://1536547385" then
-        if tostring(instance.Attachment.ParticleEmitter.Color) == "0 1 0.8 0 0 1 1 0.501961 0 0 " then
-            if settings.phoenixDown then
+        if game.PlaceId == 10215650900 then
+            if settings.phoenixFlower then
                 local esp = Assets.Esp:Clone()
                 esp.Parent = instance
                 esp.Adornee = instance
-                esp.TextLabel.TextColor3 = Color3.fromHex(settings.phoenixDownColor)
-                esp.TextLabel.Text = "[Phoenix Down]"
+                esp.TextLabel.TextColor3 = Color3.fromHex(settings.phoenixFlowerColor)
+                esp.TextLabel.Text = "[Phoenix Flower]"
                 
-                espHolder.phoenix[instance] = esp
+                espHolder.phoenixFlower[instance] = esp
             else
-                espHolder.phoenix[instance] = false
+                espHolder.phoenixFlower[instance] = false
             end
 
             return
-        end
-
-        if instance.Attachment.ParticleEmitter.Rate == 3 then
-            if settings.ma then
+        else
+            if tostring(instance.Attachment.ParticleEmitter.Color) == "0 1 0.8 0 0 1 1 0.501961 0 0 " then
+                if settings.phoenixDown then
+                    local esp = Assets.Esp:Clone()
+                    esp.Parent = instance
+                    esp.Adornee = instance
+                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.phoenixDownColor)
+                    esp.TextLabel.Text = "[Phoenix Down]"
+                    
+                    espHolder.phoenix[instance] = esp
+                else
+                    espHolder.phoenix[instance] = false
+                end
+    
+                return
+            end
+    
+            if instance.Attachment.ParticleEmitter.Rate == 3 then
+                if settings.ma then
+                    local esp = Assets.Esp:Clone()
+                    esp.Parent = instance
+                    esp.Adornee = instance
+                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.maColor)
+                    esp.TextLabel.Text = "[Mysterious Artifact]"
+        
+                    espHolder.ma[instance] = esp
+                else
+                    espHolder.ma[instance] = false
+                end
+    
+                return
+            end
+    
+            if settings.azael then
                 local esp = Assets.Esp:Clone()
                 esp.Parent = instance
                 esp.Adornee = instance
-                esp.TextLabel.TextColor3 = Color3.fromHex(settings.maColor)
-                esp.TextLabel.Text = "[Mysterious Artifact]"
+                esp.TextLabel.TextColor3 = Color3.fromHex(settings.azaelColor)
+                esp.TextLabel.Text = "[Azael Horn]"
     
-                espHolder.ma[instance] = esp
+                espHolder.azael[instance] = esp
             else
-                espHolder.ma[instance] = false
+                espHolder.azael[instance] = false
             end
-
-            return
-        end
-
-        if settings.azael then
-            local esp = Assets.Esp:Clone()
-            esp.Parent = instance
-            esp.Adornee = instance
-            esp.TextLabel.TextColor3 = Color3.fromHex(settings.azaelColor)
-            esp.TextLabel.Text = "[Azael Horn]"
-
-            espHolder.azael[instance] = esp
-        else
-            espHolder.azael[instance] = false
         end
         
         return
@@ -1160,64 +1179,6 @@ EspSection:CreateToggle({
 })
 
 EspSection:CreateToggle({
-    name = "Phoenix Down",
-    default = settings.phoenixDown,
-    callback = function(boolean)
-        settings.phoenixDown = boolean
-
-        if espOn then
-            if boolean then
-                for i,v in pairs(espHolder.phoenix) do
-                    local esp = Assets.Esp:Clone()
-                    esp.Parent = i
-                    esp.Adornee = i
-                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.phoenixDownColor)
-                    esp.TextLabel.Text = "[Phoenix Down]"
-
-                    espHolder.phoenix[i] = esp
-                end
-            else
-                for i,v in pairs(espHolder.phoenix) do
-                    if v then
-                        v:Destroy()
-                        espHolder.phoenix[i] = false
-                    end
-                end
-            end
-        end
-    end
-})
-
-EspSection:CreateToggle({
-    name = "Night Stone",
-    default = settings.nightstone,
-    callback = function(boolean)
-        settings.nightstone = boolean
-
-        if espOn then
-            if boolean then
-                for i,v in pairs(espHolder.night) do
-                    local esp = Assets.Esp:Clone()
-                    esp.Parent = i
-                    esp.Adornee = i
-                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.nightstoneColor)
-                    esp.TextLabel.Text = "[Nightstone]"
-
-                    espHolder.night[i] = esp
-                end
-            else
-                for i,v in pairs(espHolder.night) do
-                    if v then
-                        v:Destroy()
-                        espHolder.night[i] = false
-                    end
-                end
-            end
-        end
-    end
-})
-
-EspSection:CreateToggle({
     name = "Ice Essence",
     default = settings.iceessence,
     callback = function(boolean)
@@ -1246,150 +1207,239 @@ EspSection:CreateToggle({
     end
 })
 
-EspSection:CreateToggle({
-    name = "Amulet of the White King",
-    default = settings.amuletofwhite,
-    callback = function(boolean)
-        settings.amuletofwhite = boolean
-
-        if espOn then
-            if boolean then
-                for i,v in pairs(espHolder.white) do
-                    local esp = Assets.Esp:Clone()
-                    esp.Parent = i
-                    esp.Adornee = i
-                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.whiteColor)
-                    esp.TextLabel.Text = "[Amulet of the White King]"
-
-                    espHolder.white[i] = esp
-                end
-            else
-                for i,v in pairs(espHolder.white) do
-                    if v then
-                        v:Destroy()
-                        espHolder.white[i] = false
+if game.PlaceId == 10215650900 then
+    EspSection:CreateToggle({
+        name = "Phoenix Flower",
+        default = settings.phoenixFlower,
+        callback = function(boolean)
+            settings.phoenixFlower = boolean
+    
+            if espOn then
+                if boolean then
+                    for i,v in pairs(espHolder.phoenixFlower) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.phoenixFlower)
+                        esp.TextLabel.Text = "[Phoenix Flower]"
+    
+                        espHolder.phoenixFlower[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.phoenixFlower) do
+                        if v then
+                            v:Destroy()
+                            espHolder.phoenixFlower[i] = false
+                        end
                     end
                 end
             end
         end
-    end
-})
-
-EspSection:CreateToggle({
-    name = "Lannis Amulet",
-    default = settings.lannis,
-    callback = function(boolean)
-        settings.lannis = boolean
-
-        if espOn then
-            if boolean then
-                for i,v in pairs(espHolder.lannis) do
-                    local esp = Assets.Esp:Clone()
-                    esp.Parent = i
-                    esp.Adornee = i
-                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.lannisColor)
-                    esp.TextLabel.Text = "[Lannis Amulet]"
-
-                    espHolder.lannis[i] = esp
-                end
-            else
-                for i,v in pairs(espHolder.lannis) do
-                    if v then
-                        v:Destroy()
-                        espHolder.lannis[i] = false
+    })
+else
+    EspSection:CreateToggle({
+        name = "Phoenix Down",
+        default = settings.phoenixDown,
+        callback = function(boolean)
+            settings.phoenixDown = boolean
+    
+            if espOn then
+                if boolean then
+                    for i,v in pairs(espHolder.phoenix) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.phoenixDownColor)
+                        esp.TextLabel.Text = "[Phoenix Down]"
+    
+                        espHolder.phoenix[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.phoenix) do
+                        if v then
+                            v:Destroy()
+                            espHolder.phoenix[i] = false
+                        end
                     end
                 end
             end
         end
-    end
-})
-
-EspSection:CreateToggle({
-    name = "Howler",
-    default = settings.howler,
-    callback = function(boolean)
-        settings.howler = boolean
-
-        if espOn then
-            if boolean then
-                for i,v in pairs(espHolder.howler) do
-                    local esp = Assets.Esp:Clone()
-                    esp.Parent = i
-                    esp.Adornee = i
-                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.howlerColor)
-                    esp.TextLabel.Text = "[Howler Friend]"
-
-                    espHolder.howler[i] = esp
-                end
-            else
-                for i,v in pairs(espHolder.howler) do
-                    if v then
-                        v:Destroy()
-                        espHolder.howler[i] = false
+    })
+    
+    EspSection:CreateToggle({
+        name = "Night Stone",
+        default = settings.nightstone,
+        callback = function(boolean)
+            settings.nightstone = boolean
+    
+            if espOn then
+                if boolean then
+                    for i,v in pairs(espHolder.night) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.nightstoneColor)
+                        esp.TextLabel.Text = "[Nightstone]"
+    
+                        espHolder.night[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.night) do
+                        if v then
+                            v:Destroy()
+                            espHolder.night[i] = false
+                        end
                     end
                 end
             end
         end
-    end
-})
-
-EspSection:CreateToggle({
-    name = "Azael Horn",
-    default = settings.azael,
-    callback = function(boolean)
-        settings.azael = boolean
-
-        if espOn then
-            if boolean then
-                for i,v in pairs(espHolder.azael) do
-                    local esp = Assets.Esp:Clone()
-                    esp.Parent = i
-                    esp.Adornee = i
-                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.azaelColor)
-                    esp.TextLabel.Text = "[Azael Horn]"
-
-                    espHolder.azael[i] = esp
-                end
-            else
-                for i,v in pairs(espHolder.azael) do
-                    if v then
-                        v:Destroy()
-                        espHolder.azael[i] = false
+    })
+    
+    EspSection:CreateToggle({
+        name = "Amulet of the White King",
+        default = settings.amuletofwhite,
+        callback = function(boolean)
+            settings.amuletofwhite = boolean
+    
+            if espOn then
+                if boolean then
+                    for i,v in pairs(espHolder.white) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.whiteColor)
+                        esp.TextLabel.Text = "[Amulet of the White King]"
+    
+                        espHolder.white[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.white) do
+                        if v then
+                            v:Destroy()
+                            espHolder.white[i] = false
+                        end
                     end
                 end
             end
         end
-    end
-})
-
-EspSection:CreateToggle({
-    name = "Mysterious Artifact",
-    default = settings.ma,
-    callback = function(boolean)
-        settings.ma = boolean
-
-        if espOn then
-            if boolean then
-                for i,v in pairs(espHolder.ma) do
-                    local esp = Assets.Esp:Clone()
-                    esp.Parent = i
-                    esp.Adornee = i
-                    esp.TextLabel.TextColor3 = Color3.fromHex(settings.maColor)
-                    esp.TextLabel.Text = "[Mysterious Artifact]"
-
-                    espHolder.ma[i] = esp
-                end
-            else
-                for i,v in pairs(espHolder.ma) do
-                    if v then
-                        v:Destroy()
-                        espHolder.ma[i] = false
+    })
+    
+    EspSection:CreateToggle({
+        name = "Lannis Amulet",
+        default = settings.lannis,
+        callback = function(boolean)
+            settings.lannis = boolean
+    
+            if espOn then
+                if boolean then
+                    for i,v in pairs(espHolder.lannis) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.lannisColor)
+                        esp.TextLabel.Text = "[Lannis Amulet]"
+    
+                        espHolder.lannis[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.lannis) do
+                        if v then
+                            v:Destroy()
+                            espHolder.lannis[i] = false
+                        end
                     end
                 end
             end
         end
-    end
-})
+    })
+    
+    EspSection:CreateToggle({
+        name = "Howler",
+        default = settings.howler,
+        callback = function(boolean)
+            settings.howler = boolean
+    
+            if espOn then
+                if boolean then
+                    for i,v in pairs(espHolder.howler) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.howlerColor)
+                        esp.TextLabel.Text = "[Howler Friend]"
+    
+                        espHolder.howler[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.howler) do
+                        if v then
+                            v:Destroy()
+                            espHolder.howler[i] = false
+                        end
+                    end
+                end
+            end
+        end
+    })
+    
+    EspSection:CreateToggle({
+        name = "Azael Horn",
+        default = settings.azael,
+        callback = function(boolean)
+            settings.azael = boolean
+    
+            if espOn then
+                if boolean then
+                    for i,v in pairs(espHolder.azael) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.azaelColor)
+                        esp.TextLabel.Text = "[Azael Horn]"
+    
+                        espHolder.azael[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.azael) do
+                        if v then
+                            v:Destroy()
+                            espHolder.azael[i] = false
+                        end
+                    end
+                end
+            end
+        end
+    })
+    
+    EspSection:CreateToggle({
+        name = "Mysterious Artifact",
+        default = settings.ma,
+        callback = function(boolean)
+            settings.ma = boolean
+    
+            if espOn then
+                if boolean then
+                    for i,v in pairs(espHolder.ma) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.maColor)
+                        esp.TextLabel.Text = "[Mysterious Artifact]"
+    
+                        espHolder.ma[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.ma) do
+                        if v then
+                            v:Destroy()
+                            espHolder.ma[i] = false
+                        end
+                    end
+                end
+            end
+        end
+    })
+end
 
 
 local TrinketSection = ItemsSection:CreateSection("Trinkets")
@@ -1647,6 +1697,21 @@ ColorTab:CreateColorPicker({
         settings.maColor = color:ToHex()
             
         if espOn and settings.ma then
+            for i,v in pairs(espHolder.ma) do
+                v.TextLabel.TextColor3 = color
+            end
+        end
+    end
+})
+
+ColorTab:CreateColorPicker({
+    name = "Phoenix Flower",
+    default = Color3.fromHex(settings.phoenixFlowerColor),
+    resetColor = Color3.fromHex("#960000"),
+    callback = function(color)
+        settings.phoenixFlowerColor = color:ToHex()
+            
+        if espOn and settings.phoenixFlower then
             for i,v in pairs(espHolder.ma) do
                 v.TextLabel.TextColor3 = color
             end
