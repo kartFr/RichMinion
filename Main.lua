@@ -15,7 +15,7 @@ local Gui = Library.new("Karts' poorest minion gui")
 
 local camera = game.Workspace.CurrentCamera
 local spellPrecentages = {
-    Gate = {Snap = {.75, .85}},
+    Gate = {Snap = {.8, .9}},
     Ignis = {Snap = {.50, .60}, Normal = {.85, .95}},
     Gelidus = {Normal = {.80, .90}, Snap = {.60, 1}},
     Viribus = {Snap = {.60, .75}, Normal = {.25, .35}},
@@ -597,7 +597,7 @@ VisualSection:CreateToggle({
     
                             if settings.characterName then
                                 local player = Players[v.Name]
-                                esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. player.leaderstats.FirstName.Value .. player.leaderstats.LastName.Value .. player.leaderstats.UberTitle.Value .. "]"
+                                esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. player.leaderstats.FirstName.Value.. " " .. player.leaderstats.LastName.Value .. player.leaderstats.UberTitle.Value .. "]"
                             end
 
                             if settings.health then
@@ -2063,18 +2063,20 @@ MiscTab:CreateToggle({
                     local closest = math.huge
                     local hasClosest = false
                     for i,v in pairs(nearby) do
-                        local partParent = v
+                        if string.sub(v.Name, 1, 1) ~= "." then
+                            local partParent = v
 
-                        repeat
-                            partParent = partParent.Parent
-                        until partParent.Parent == game.Workspace.Live
+                            repeat
+                                partParent = partParent.Parent
+                            until partParent.Parent == game.Workspace.Live
 
-                        if partParent ~= Players.LocalPlayer.Character then
-                            local magnitude = (Players.LocalPlayer.Character.Torso.Position - partParent.Torso.Position).Magnitude
+                            if partParent ~= Players.LocalPlayer.Character then
+                                local magnitude = (Players.LocalPlayer.Character.Torso.Position - partParent.Torso.Position).Magnitude
 
-                            if magnitude < closest then
-                                closest = magnitude
-                                hasClosest = true
+                                if magnitude < closest then
+                                    closest = magnitude
+                                    hasClosest = true
+                                end
                             end
                         end
                     end
@@ -2098,7 +2100,11 @@ MiscTab:CreateToggle({
 MiscTab:CreateButton({
     name = "Server Hop",
     callback = function()
-        TeleportService:Teleport(9978746069)
+        if game.GameId == 9978746069 then
+            TeleportService:Teleport(9978746069)
+        else
+
+        end
     end
 })
 
