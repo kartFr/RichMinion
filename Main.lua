@@ -368,6 +368,17 @@ Players.LocalPlayer.Character.Humanoid.StateChanged:Connect(function(old, new)
     end
 end)
 
+Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.StateChanged:Connect(function(old, new)
+        if new == Enum.HumanoidStateType.Swimming then
+            inWater = true
+        else
+            inWater = false
+        end
+    end)
+end)
+
 resetOnDeath.noclip = PlayerSection:CreateToggle({
     name = "No Clip",
     default = false,
