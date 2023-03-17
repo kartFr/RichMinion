@@ -14,7 +14,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Assets = game:GetObjects("rbxassetid://12795349082")[1]
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/kartFr/UiLib/main/Main.lua"))()
-local Gui = Library.new("Karts' richest minion gui")
+local Gui = Library.new("Karts' poorest minion gui")
 
 local camera = game.Workspace.CurrentCamera
 local spellPrecentages = {
@@ -72,9 +72,10 @@ local spellPrecentages = {
 local resetOnDeath = {}
 local proxy = {}
 
+local fileName = "minionFinal1.txt"
 if writefile then
-    if isfile("minion1.txt") then
-        proxy = HttpService:JSONDecode(readfile("minion1.txt"))
+    if isfile(fileName) then
+        proxy = HttpService:JSONDecode(readfile(fileName))
     else
         proxy = {
             phoenixDown = false,
@@ -111,7 +112,11 @@ if writefile then
             brightness = 0,
             day = false,
             shadows = true,
-            nofog = false
+            nofog = false,
+            backstabDistance = 1,
+            fullbright = false,
+            playerAlert = false,
+            waterclip = false
         }
     end
 end
@@ -120,7 +125,7 @@ local settings = setmetatable({},{
     __newindex = function(self, key, value)
         proxy[key] = value
         if writefile then
-            writefile("minion1.txt", HttpService:JSONEncode(proxy))
+            writefile(fileName, HttpService:JSONEncode(proxy))
         end
     end,
     __index = function(self, index)
@@ -149,6 +154,16 @@ local keysDown = {
     ["LeftControl"] = {false, Vector3.new(0, -1, 0)},
 }
 
+ContextActionService:BindAction("flight", function(_actionName, inputState, inputObject)
+    if inputState == Enum.UserInputState.Begin then
+        keysDown[inputObject.KeyCode.Name][1] = true
+    elseif inputState == Enum.UserInputState.End then
+        keysDown[inputObject.KeyCode.Name][1] = false
+    end
+
+    return Enum.ContextActionResult.Pass
+end, false, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.Space, Enum.KeyCode.LeftControl)
+
 resetOnDeath.fly = PlayerSection:CreateToggle({
     name = "Fly",
     default = false,
@@ -162,32 +177,19 @@ resetOnDeath.fly = PlayerSection:CreateToggle({
 
                 for i,v in pairs(keysDown) do
                     if v[1] then
-                        direction += v[2] * (settings.flyspeed / 3)
+                        direction += v[2] * (settings.flyspeed / 2)
                     end
                 end
 
                 local newPosition = Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(direction)
-                Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.lookAt(newPosition.Position, camera.CFrame.Position + (camera.CFrame.LookVector.Unit * 10000))
+                newPosition = CFrame.lookAt(newPosition.Position, camera.CFrame.Position + (camera.CFrame.LookVector.Unit * 10000))
+
+                Players.LocalPlayer.Character.HumanoidRootPart.CFrame = newPosition
             end)
-
-            ContextActionService:BindAction("flight", function(_actionName, inputState, inputObject)
-                if inputState == Enum.UserInputState.Begin then
-                    keysDown[inputObject.KeyCode.Name][1] = true
-                elseif inputState == Enum.UserInputState.End then
-                    keysDown[inputObject.KeyCode.Name][1] = false
-                end
-
-                return Enum.ContextActionResult.Pass
-            end, false, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.Space, Enum.KeyCode.LeftControl)
         else
             if flightConnection then
                 flightConnection:Disconnect()
                 flightConnection = false
-                ContextActionService:UnbindAction("flight")
-
-                for i,v in pairs(keysDown) do
-                    v[1] = false
-                end
             end
         end
     end
@@ -219,8 +221,10 @@ resetOnDeath.walkspeed = PlayerSection:CreateToggle({
             originalWalkSpeed = Players.LocalPlayer.Character.Humanoid.WalkSpeed
             Players.LocalPlayer.Character.Humanoid.WalkSpeed *= settings.Walkspeed
             speedEvent = Players.LocalPlayer.Character.Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                originalWalkSpeed = Players.LocalPlayer.Character.Humanoid.WalkSpeed
-                Players.LocalPlayer.Character.Humanoid.WalkSpeed *= settings.Walkspeed 
+                if Players.LocalPlayer.Character.Humanoid.WalkSpeed ~= originalWalkSpeed * settings.Walkspeed then
+                    originalWalkSpeed = Players.LocalPlayer.Character.Humanoid.WalkSpeed
+                    Players.LocalPlayer.Character.Humanoid.WalkSpeed *= settings.Walkspeed 
+                end
             end)
         elseif speedEvent then
             speedEvent:Disconnect()
@@ -256,8 +260,10 @@ resetOnDeath.walkspeed = PlayerSection:CreateToggle({
         if boolean then
             originalJumpPower = Players.LocalPlayer.character.Humanoid.JumpPower
             jumpEvent = Players.LocalPlayer.Character.Humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
-                originalJumpPower = Players.LocalPlayer.character.Humanoid.JumpPower
-                Players.LocalPlayer.character.Humanoid.JumpPower = originalJumpPower * settings.jumpPower
+                if Players.LocalPlayer.character.Humanoid.JumpPower ~= originalJumpPower * settings.jumpPower then
+                    originalJumpPower = Players.LocalPlayer.character.Humanoid.JumpPower
+                    Players.LocalPlayer.character.Humanoid.JumpPower = originalJumpPower * settings.jumpPower
+                end
             end)
             Players.LocalPlayer.character.Humanoid.JumpPower *= settings.jumpPower
 
@@ -333,9 +339,18 @@ resetOnDeath.float = PlayerSection:CreateToggle({
 })
 
 local noclip
+local inWater
+
+Players.LocalPlayer.Character.Humanoid.StateChanged:Connect(function(old, new)
+    if new == Enum.HumanoidStateType.Swimming then
+        inWater = true
+    else
+        inWater = false
+    end
+end)
 
 resetOnDeath.noclip = PlayerSection:CreateToggle({
-    name = "NoClip",
+    name = "No Clip",
     default = false,
     callback = function(boolean)
         noclip = boolean
@@ -345,6 +360,10 @@ resetOnDeath.noclip = PlayerSection:CreateToggle({
                 if noclip then
                     for i,v in pairs(Players.LocalPlayer.character:GetDescendants()) do
                         if v:IsA("BasePart") and v ~= floatPart then
+                            if settings.waterclip and inWater then
+                                return
+                            end
+
                             v.CanCollide = false
                         end
                     end
@@ -358,11 +377,19 @@ resetOnDeath.noclip = PlayerSection:CreateToggle({
     end
 })
 
+PlayerSection:CreateToggle({
+    name = "Disable No Clip in Water",
+    default = settings.waterclip,
+    callback = function(boolean)
+        settings.waterclip = boolean
+    end
+})
+
 local StatusSection = CharacterTab:CreateSection("Status Effects")
 
 StatusSection:CreateToggle({
     name = "No Fall",
-    default = false,
+    default = settings.nofall,
     callback = function(boolean)
         settings.nofall = boolean
     end
@@ -428,7 +455,8 @@ VisualSection:CreateToggle({
                             snapGui:Destroy()
                             snapGui = false
                         end
-    
+                        
+                        currentTool = false
                         return
                     end
     
@@ -604,7 +632,7 @@ AppearanceSection:CreateToggle({
 
         if boolean then
             brightnessConnection = game.Lighting:GetPropertyChangedSignal("Brightness"):Connect(function()
-                if not settings.day then
+                if not settings.day and not settings.fullbright then
                     game.Lighting.Brightness = settings.brightness
                 end
             end)
@@ -637,7 +665,9 @@ AppearanceSection:CreateToggle({
 
         if boolean then
             shadowConnection = game.Lighting:GetPropertyChangedSignal("GlobalShadows"):Connect(function()
-                game.Lighting.GlobalShadows = boolean
+                if not settings.fullbright then
+                    game.Lighting.GlobalShadows = boolean
+                end
             end)
 
             game.Lighting.GlobalShadows = boolean
@@ -665,7 +695,9 @@ AppearanceSection:CreateToggle({
         
         if boolean then
             dayBright = game.Lighting:GetPropertyChangedSignal("Brightness"):Connect(function()
-                game.Lighting.Brightness = 1
+                if not settings.fullbright then
+                    game.Lighting.Brightness = 1
+                end
             end)
 
             dayTime = game.Lighting:GetPropertyChangedSignal("ClockTime"):Connect(function()
@@ -680,10 +712,13 @@ AppearanceSection:CreateToggle({
             game.Lighting.Brightness = 1
             game.Lighting.ClockTime = 12
         else
-            dayBright:Disconnect()
-            dayTime:Disconnect()
-            soft:Disconnect()
-            game.Lighting.ClockTime = 24
+            if dayBright then
+                dayBright:Disconnect()
+                dayBright = false
+                dayTime:Disconnect()
+                soft:Disconnect()
+                game.Lighting.ClockTime = 24
+            end
         end
     end
 })
@@ -710,6 +745,125 @@ AppearanceSection:CreateToggle({
     end
 })
 
+local ambienceConnection
+local brightfb
+local shadowfb
+AppearanceSection:CreateToggle({
+    name = "Fullbright",
+    default = settings.fullbright,
+    callback = function(boolean)
+        settings.fullbright = boolean
+
+        if boolean then
+            ambienceConnection = game.Lighting:GetPropertyChangedSignal("OutdoorAmbient"):Connect(function()
+                game.Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+            end)
+
+            brightfb = game.Lighting:GetPropertyChangedSignal("Brightness"):Connect(function()
+                game.Lighting.Brightness = 2
+            end)
+
+            shadowfb = game.Lighting:GetPropertyChangedSignal("GlobalShadows"):Connect(function()
+                game.Lighting.GlobalShadows = false
+            end)
+
+            game.Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+            game.Lighting.Brightness = 2
+            game.Lighting.GlobalShadows = false
+        else
+            if ambienceConnection then
+                ambienceConnection:Disconnect()
+                ambienceConnection = false
+                brightfb:Disconnect()
+                shadowfb:Disconnect()
+                game.Lighting.GlobalShadows = false
+            end
+        end
+    end
+})
+
+local RageSection = CharacterTab:CreateSection("Rage")
+
+local backstabParams = RaycastParams.new()
+backstabParams.FilterType = Enum.RaycastFilterType.Include
+backstabParams.FilterDescendantsInstances = {game.Workspace.Live}
+local deathConnection
+local distanceConnection
+local hasTarget
+
+local backstab
+backstab = RageSection:CreateToggle({
+    name = "Backstab",
+    default = false,
+    callback = function(boolean)
+        if boolean then
+            local mouse = Players.LocalPlayer:GetMouse()
+            local unitRay = camera:ScreenPointToRay(mouse.X, mouse.Y)
+            local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction * 150, backstabParams)
+            if raycastResult then
+                local parent = raycastResult.Instance
+
+                while true do
+                parent = parent.Parent
+                
+                if parent.Parent == game.Workspace.Live then
+                        break
+                end
+                end
+
+                if parent ~= Players.LocalPlayer.Character then
+                    hasTarget = true
+
+                    deathConnection = Players.LocalPlayer.Character.Humanoid.Died:Connect(function()
+                        deathConnection:Disconnect()
+                        deathConnection = false
+                        distanceConnection:Disconnect()
+                        distanceConnection = false
+                        hasTarget = false
+                    end)
+
+                    distanceConnection = RunService.Heartbeat:Connect(function()
+                        if (Players.LocalPlayer.Character.HumanoidRootPart.Position - parent.HumanoidRootPart.Position).Magnitude <= 50 then
+                            Players.LocalPlayer.Character.HumanoidRootPart.CFrame = parent.HumanoidRootPart.CFrame * CFrame.new(0, 0, settings.backstabDistance)
+                        else
+                            deathConnection:Disconnect()
+                            deathConnection = false
+                            distanceConnection:Disconnect()
+                            distanceConnection = false
+                            hasTarget = false
+                        end
+                    end)
+                else
+                    backstab:Set(false)
+                    return
+                end
+            else
+                backstab:Set(false)
+                return
+            end
+        else
+            if hasTarget then
+                deathConnection:Disconnect()
+                deathConnection = false
+                distanceConnection:Disconnect()
+                distanceConnection = false
+                hasTarget = false
+            end
+        end
+    end
+}):AddKeybind({
+    default = settings.backstabBind,
+    callback = function(bind)
+        settings.backstabBind = bind
+    end
+}):AddSlider({
+    minimum = 1,
+    maximum = 6,
+    default = settings.backstabDistance,
+    callback = function(number)
+        settings.backstabDistance = number
+    end
+})
 
 local ItemsSection = Gui:CreateTab("Items")
 local EspSection = ItemsSection:CreateSection("Trinket Esp")
@@ -1437,9 +1591,16 @@ local function logChat(player, message)
         chat.Menu.Body.Holder.CanvasSize = UDim2.new(0, 0, 0, chat.Menu.Body.Holder.UIListLayout.AbsoluteContentSize.Y)
 
         log.MouseButton1Down:Connect(function()
-            if game.Workspace.Live[player.Name] then
+            if game.Workspace.Live:FindFirstChild(player.Name) then
                 camera.CameraSubject = game.Workspace.Live[player.Name]
                 spectating = true
+                return
+            end
+
+            if game.Workspace.Dead:FindFirstChild(player.Name) then
+                camera.CameraSubject = game.Workspace.Dead[player.Name]
+                spectating = true
+                return
             end
         end)
 
@@ -1451,10 +1612,8 @@ end
 
 ContextActionService:BindAction("mousebutton1click", function(_actionName, inputState, _inputObject)
     if inputState == Enum.UserInputState.Begin and spectating then
-        local humanoid = Players.LocalPlayer.Character:WaitForChild("Humanoid")
-        
         spectating = false
-        camera.CameraSubject = humanoid
+        camera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
     end
 
     return Enum.ContextActionResult.Pass
@@ -1616,7 +1775,7 @@ local function onJoin(player)
             CoreGui:SetCore("SendNotification", {
                 Title = role,
                 Text = player.Name .. " joined server",
-                Duration = 30,
+                Duration = math.huge,
                 Button1 = "Ignore",
                 Icon = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
             })
@@ -1632,7 +1791,7 @@ local function onLeave(player)
             CoreGui:SetCore("SendNotification", {
                 Title = role,
                 Text = player.Name .. " left server",
-                Duration = 30,
+                Duration = math.huge,
                 Button1 = "Ignore",
                 Icon = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
             })
@@ -1659,7 +1818,7 @@ MiscTab:CreateToggle({
                         CoreGui:SetCore("SendNotification", {
                             Title = role,
                             Text = v.Name .. " in server",
-                            Duration = 30,
+                            Duration = math.huge,
                             Button1 = "Ignore",
                             Icon = Players:GetUserThumbnailAsync(v.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
                         })
@@ -1709,26 +1868,86 @@ MiscTab:CreateToggle({
                 if onFloor then
                     timerStarted = false
                     timerGui.Enabled = false
-                    if airConnection then
-                        airConnection:Disconnect()
-                        airConnection = nil
-                    end
                 else
                     if not timerStarted then
                         timerStarted = true
                         timerGui.Enabled = true
                         airTimer = os.clock() + 55
-
-                        airConnection = RunService.Heartbeat:Connect(function()
-                            timerGui.Frame.Timer.Text = math.floor((airTimer - os.clock()) + 0.5)
-                        end)
                     end
+
+                    timerGui.Frame.Timer.Text = math.floor((airTimer - os.clock()) + 0.5)
                 end
             end)
         else
             if airConnection then
                 airConnection:Disconnect()
+                airConnection = false
                 timerGui:Destroy()
+            end
+        end
+    end
+})
+
+local alertParams = OverlapParams.new()
+alertParams.FilterType = Enum.RaycastFilterType.Include
+alertParams.FilterDescendantsInstances = {game.Workspace.Live}
+
+local alertGui
+local alertConnection
+MiscTab:CreateToggle({
+    name = "Player Alert",
+    default = settings.playerAlert,
+    callbackOnCreation = true,
+    callback = function(boolean)
+        settings.playerAlert = boolean
+
+        if boolean then
+            alertGui = Assets.Nearby:Clone()
+            
+            if syn then
+                syn.protect_gui(alertGui)
+                alertGui.Parent = game.CoreGui
+            elseif gethui then
+                alertGui.Parent = gethui()
+            else
+                alertGui.Parent = game.CoreGui
+            end
+
+            alertConnection = RunService.Heartbeat:Connect(function()
+                local nearby = workspace:GetPartBoundsInRadius(Players.LocalPlayer.Character.HumanoidRootPart.Position, 200, alertParams) 
+                alertGui.Enabled = false
+
+                if nearby[1] then
+                    local closest = math.huge
+                    local hasClosest = false
+                    for i,v in pairs(nearby) do
+                        local partParent = v
+
+                        repeat
+                            partParent = partParent.Parent
+                        until partParent.Parent == game.Workspace.Live
+
+                        if partParent ~= Players.LocalPlayer.Character then
+                            local magnitude = (Players.LocalPlayer.Character.Torso.Position - partParent.Torso.Position).Magnitude
+
+                            if magnitude < closest then
+                                closest = magnitude
+                                hasClosest = true
+                            end
+                        end
+                    end
+
+                    if hasClosest then
+                        alertGui.Enabled = true
+                        alertGui.Frame.Timer.Text = math.floor(closest).. " Studs"
+                    end
+                end
+            end)
+        else
+            if alertConnection then
+                alertConnection:Disconnect()
+                alertConnection = false
+                alertGui.Enabled = false
             end
         end
     end
