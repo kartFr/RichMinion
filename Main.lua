@@ -1982,7 +1982,7 @@ local timerGui
 local airConnection
 local raycastParams = RaycastParams.new()
 raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-raycastParams.FilterDescendantsInstances = {game.Workspace.AreaMarkers}
+raycastParams.FilterDescendantsInstances = {game.Workspace.AreaMarkers, game.Workspace.Live}
 
 MiscTab:CreateToggle({
     name = "AA Timer",
