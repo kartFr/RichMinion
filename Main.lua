@@ -369,7 +369,7 @@ resetOnDeath.noclip = PlayerSection:CreateToggle({
             connection = RunService.Stepped:Connect(function()
                 if noclip then
                     for i,v in pairs(Players.LocalPlayer.character:GetDescendants()) do
-                        if v:IsA("BasePart") and v ~= floatPart then
+                        if v:IsA("BasePart") and v ~= floatPart and not Players.LocalPlayer.Character.Head:FindFirstChild("RagdollAttach") then
                             if settings.waterclip and inWater then
                                 return
                             end
@@ -1361,6 +1361,15 @@ local overlapParams = OverlapParams.new()
 overlapParams.FilterType = Enum.RaycastFilterType.Include
 overlapParams.FilterDescendantsInstances = {game.Workspace.Trinkets, game.Workspace.Ingredients }
 local pickup
+local whenPicked = math.huge
+local amountPicked = 0
+
+RunService.Heartbeat:Connect(function()
+    if whenPicked - os.clock() <= 0 then
+        whenPicked = math.huge
+        amountPicked = 0 
+    end
+end)
 
 resetOnDeath.autopickup = TrinketSection:CreateToggle({
     name = "Auto Pickup Trinkets",
@@ -1374,8 +1383,10 @@ resetOnDeath.autopickup = TrinketSection:CreateToggle({
                     for i,v in pairs(trinkets) do
                         if v.Parent == game.Workspace.Trinkets then
                             for i,v in pairs(v:GetChildren()) do
-                                if v.Name == "ClickPart" then
+                                if v.Name == "ClickPart" and amountPicked <= 5 then
                                     fireclickdetector(v.ClickDetector)
+                                    amountPicked += 1
+                                    whenPicked = os.clock() + 1
                                 end
                             end
                         end
