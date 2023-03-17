@@ -357,7 +357,6 @@ resetOnDeath.float = PlayerSection:CreateToggle({
     end
 })
 
-local noclip
 local inWater
 
 Players.LocalPlayer.Character:WaitForChild("Humanoid").StateChanged:Connect(function(old, new)
@@ -379,30 +378,31 @@ Players.LocalPlayer.CharacterAdded:Connect(function(character)
     end)
 end)
 
+local clipConnection
 resetOnDeath.noclip = PlayerSection:CreateToggle({
     name = "No Clip",
     default = false,
     callback = function(boolean)
-        noclip = boolean
         if boolean then
-            local connection
-            connection = RunService.Stepped:Connect(function()
-                if noclip then
-                    for i,v in pairs(Players.LocalPlayer.character:GetDescendants()) do
-                        if v:IsA("BasePart") and v ~= floatPart and not Players.LocalPlayer.Character.Head:FindFirstChild("RagdollAttach") then
-                            if settings.waterclip and inWater then
-                                return
-                            end
-
-                            v.CanCollide = false
+            clipConnection = RunService.Stepped:Connect(function()
+                for i,v in pairs(Players.LocalPlayer.character:GetDescendants()) do
+                    if v:IsA("BasePart") and v ~= floatPart and not Players.LocalPlayer.Character.Head:FindFirstChild("RagdollAttach") then
+                        if settings.waterclip and inWater then
+                            return
                         end
-                    end
-                else
-                    if connection then
-                        connection:Disconnect()
+
+                        v.CanCollide = false
                     end
                 end
             end)
+        else
+            if clipConnection then
+                clipConnection:Disconnect()
+                clipConnection = false
+                if Players.LocalPlayer.Character then
+                    Players.LocalPlayer.Character.Torso.CanCollide = true
+                end
+            end
         end
     end
 }):AddKeybind({
