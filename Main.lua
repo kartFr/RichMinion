@@ -251,7 +251,7 @@ local canJump = false
 local originalJumpPower
 local jumpEvent
 
-resetOnDeath.walkspeed = PlayerSection:CreateToggle({
+resetOnDeath.jumpHeight = PlayerSection:CreateToggle({
     name = "JumpPower Multiplier", 
     default = false, 
     callback = function(boolean)
@@ -308,6 +308,11 @@ resetOnDeath.infJump = PlayerSection:CreateToggle({
             ContextActionService:UnbindAction("InfJump")
         end
     end
+}):AddKeybind({
+    default = settings.infjumpBind,
+    callback = function(bind)
+        settings.infjumpBind = bind
+    end
 })
 
 resetOnDeath.float = PlayerSection:CreateToggle({
@@ -335,6 +340,11 @@ resetOnDeath.float = PlayerSection:CreateToggle({
                 floatPart:Destroy()
             end
         end
+    end
+}):AddKeybind({
+    default = settings.floatBind,
+    callback = function(bind)
+        settings.floatBind = bind
     end
 })
 
@@ -375,7 +385,13 @@ resetOnDeath.noclip = PlayerSection:CreateToggle({
             end)
         end
     end
+}):AddKeybind({
+    default = settings.noclipBind,
+    callback = function(bind)
+        settings.noclipBind = bind
+    end
 })
+
 
 PlayerSection:CreateToggle({
     name = "Disable No Clip in Water",
@@ -586,6 +602,11 @@ VisualSection:CreateToggle({
 
             espGuis = {}
         end
+    end
+}):AddKeybind({
+    default = settings.playerEspBind,
+    callback = function(bind)
+        settings.playerEspBind = bind
     end
 })
 
