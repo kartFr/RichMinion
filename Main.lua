@@ -360,7 +360,7 @@ resetOnDeath.float = PlayerSection:CreateToggle({
 local noclip
 local inWater
 
-Players.LocalPlayer.Character.Humanoid.StateChanged:Connect(function(old, new)
+Players.LocalPlayer.Character:WaitForChild("Humanoid").StateChanged:Connect(function(old, new)
     if new == Enum.HumanoidStateType.Swimming then
         inWater = true
     else
