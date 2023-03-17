@@ -456,7 +456,7 @@ local spellCheck
 VisualSection:CreateToggle({
     name = "Spell Helper",
     default = settings.spellhelp,
-    callbackOnCreation = true
+    callbackOnCreation = true,
     callback = function(boolean)
         if boolean then
             spellCheck = game.RunService.Heartbeat:Connect(function()
