@@ -1,10 +1,6 @@
-while not game:IsLoaded() do 
-    task.wait() 
-end
-
-while not game.Players.LocalPlayer.Character do
-    task.wait()
-end
+local version = "0.01"
+repeat task.wait() until game:IsLoaded() 
+repeat task.wait() until game.Players.LocalPlayer.Character
 
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("StarterGui")
@@ -70,56 +66,67 @@ local spellPrecentages = {
     Liber = {Normal = {.01, 1}},
     Scribo = {Normal = {.01, 1}},
 }
+
+local defaultSettings = {
+    phoenixDown = false,
+    Walkspeed = 1,
+    jumpPower = 1,
+    nightstone = false,
+    iceessence = false,
+    amuletofwhite = false,
+    lannis = false,
+    scroll = false,
+    mod = true,
+    observe = true,
+    flyspeed = 1,
+    AAtimer = false,
+    howler = false,
+    azael = false,
+    ma = false,
+    phoenixDownColor = "#FFC90E",
+    nightstoneColor = "#1D2E3A",
+    iceColor = "#00FFFF",
+    whiteColor = "#F8F8F8",
+    lannisColor = "#D70EFF",
+    scrollColor = "#7A5E27",
+    howlerColor = "#FE5564",
+    azaelColor = "#960000",
+    maColor = "#2C4920",
+    normalColor = Color3.new(0, 0, 1):ToHex(),
+    snapColor = Color3.new(1, 0, 0):ToHex(),
+    characterName = false,
+    tool = false,
+    playerColor = Color3.new(1, 1, 1):ToHex(),
+    maxzoom = false,
+    brightnessBool = false,
+    brightness = 0,
+    day = false,
+    shadows = true,
+    nofog = false,
+    backstabDistance = 1,
+    fullbright = false,
+    playerAlert = false,
+    waterclip = false,
+    spellhelp = false,
+    playerDistance = false,
+    chatlogIlluColor = Color3.fromRGB(0, 150, 255):ToHex(),
+    version = version
+}
 local resetOnDeath = {}
 local proxy = {}
 
-local fileName = "minionFinal2.txt"
+local fileName = "PoorMinion.txt"
 if writefile then
     if isfile(fileName) then
         proxy = HttpService:JSONDecode(readfile(fileName))
+
+        if proxy.version ~= version then
+            proxy = defaultSettings
+            writefile(fileName, HttpService:JSONEncode(proxy))
+        end
     else
-        proxy = {
-            phoenixDown = false,
-            Walkspeed = 1,
-            jumpPower = 1,
-            nightstone = false,
-            iceessence = false,
-            amuletofwhite = false,
-            lannis = false,
-            scroll = false,
-            mod = true,
-            observe = true,
-            flyspeed = 1,
-            AAtimer = false,
-            howler = false,
-            azael = false,
-            ma = false,
-            phoenixDownColor = "#FFC90E",
-            nightstoneColor = "#1D2E3A",
-            iceColor = "#00FFFF",
-            whiteColor = "#F8F8F8",
-            lannisColor = "#D70EFF",
-            scrollColor = "#7A5E27",
-            howlerColor = "#FE5564",
-            azaelColor = "#960000",
-            maColor = "#2C4920",
-            normalColor = Color3.new(0, 0, 1):ToHex(),
-            snapColor = Color3.new(1, 0, 0):ToHex(),
-            characterName = false,
-            tool = false,
-            playerColor = Color3.new(1, 1, 1):ToHex(),
-            maxzoom = false,
-            brightnessBool = false,
-            brightness = 0,
-            day = false,
-            shadows = true,
-            nofog = false,
-            backstabDistance = 1,
-            fullbright = false,
-            playerAlert = false,
-            waterclip = false,
-            spellhelp = false,
-        }
+        proxy = defaultSettings
+        writefile(fileName, HttpService:JSONEncode(proxy))
     end
 end
 
@@ -594,6 +601,10 @@ VisualSection:CreateToggle({
                                     esp.TextLabel.Text = esp.TextLabel.Text .. "[Fists]"
                                 end
                             end
+
+                            if settings.playerDistance then
+                                esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. math.floor((Players.LocalPlayer.Character.Torso.Position - v.Torso.Position).Magnitude) .. "]"
+                            end
                         end
                     end
                 end
@@ -636,6 +647,14 @@ VisualSection:CreateToggle({
     default = settings.tool,
     callback = function(boolean)
         settings.tool = boolean
+    end
+})
+
+VisualSection:CreateToggle({
+    name = "Distance ESP",
+    default = settings.playerDistance,
+    callback = function(boolean)
+        settings.playerDistance = boolean
     end
 })
 
@@ -1630,10 +1649,26 @@ local spectating = false
 
 local function logChat(player, message)
     if chat then
+        local observe = false
+        local action = false
         local log = Assets.Log:Clone()
         log.Text = "[" .. player.Name .. "]:" .. message
         log.Parent = chat.Menu.Body.Holder
         chat.Menu.Body.Holder.CanvasSize = UDim2.new(0, 0, 0, chat.Menu.Body.Holder.UIListLayout.AbsoluteContentSize.Y)
+           
+        for i,v in pairs(player.Character:GetChildren()) do
+            if v.Name == "Action" then
+                action = true
+            end
+
+            if v.Name == "Observe" then
+                observe = true
+            end
+        end
+
+        if observe and action then
+            log.TextColor3 = Color3.fromHex(settings.chatlogIlluColor)
+        end
 
         log.MouseButton1Down:Connect(function()
             if game.Workspace.Live:FindFirstChild(player.Name) then
@@ -1723,38 +1758,84 @@ MiscTab:CreateToggle({
     end
 })
 
+local beingObserved = {}
+
 local function observeNotification(player)
     if settings.observe then
         CoreGui:SetCore("SendNotification", {
             Title = player.Name,
-            Text = "Is observing",
-            Duration = 30,
+            Text = "Started observing",
+            Duration = math.huge,
             Button1 = "Ignore",
             Icon = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48),
         })
     end
     
+    local illuChat
     local remove
     remove = player.Character.ChildRemoved:Connect(function(child)
-        if child:IsA("Tool") and settings.observe then
+        if child.Name == "Action" then
+            if settings.observe then
+                CoreGui:SetCore("SendNotification", {
+                    Title = player.Name,
+                    Text = "Stopped observing",
+                    Duration = math.huge,
+                    Button1 = "Ignore",
+                    Icon = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+                })
+            end
+
+            illuChat:Disconnect()
+            remove:Disconnect()
+            table.remove(beingObserved, table.find(beingObserved, player.Character))
+        end
+    end)
+
+    illuChat = player.Chatted:Connect(function(message)
+        local bestMatch = 0
+        local bestMatchPlayer = false
+        for i,v in pairs(Players:GetPlayers()) do
+            if v.leaderstats:FindFirstChild("FirstName") and not v:FindFirstChild("ObserveBlock") then
+                local name = v.leaderstats.FirstName.Value
+                local start, stringEnd = string.find(string.lower(name), string.lower(message))
+                if start == 1 and stringEnd > bestMatch then
+                    bestMatch = stringEnd
+                    bestMatchPlayer = v
+                end
+            end
+        end
+
+        if bestMatchPlayer == Players.LocalPlayer and not Players.LocalPlayer:FindFirstChild("ObserveBlock") then
             CoreGui:SetCore("SendNotification", {
                 Title = player.Name,
-                Text = "Stopped observing",
-                Duration = 30,
+                Text = "Is observing you",
+                Duration = math.huge,
                 Button1 = "Ignore",
                 Icon = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
             })
         end
-
-        remove:Disconnect()
     end)
 end
 
 local function observeWatch(player)
     if player ~= Players.LocalPlayer.Character then
         player.Character.ChildAdded:Connect(function(instance)
-            if instance:IsA("Tool") and instance.Name == "Observe" then
+            local observe = false
+            local action = false
+
+            for i,v in pairs(player.Character:GetChildren()) do
+                if v.Name == "Action" then
+                    action = true
+                end
+
+                if v.Name == "Observe" then
+                    observe = true
+                end
+            end
+
+            if observe and action and not table.find(beingObserved, player.Character) then
                 observeNotification(player)
+                table.insert(beingObserved, player.Character)
             end
         end)
     end
@@ -1788,16 +1869,21 @@ MiscTab:CreateToggle({
         if boolean then
             for i,v in pairs(Players:GetPlayers()) do
                 if v.Character and v ~= Players.LocalPlayer then
-                    for i,tool in pairs(v.Character:GetChildren()) do
-                        if tool:IsA("Tool") and tool.Name == "Observe" then
-                            CoreGui:SetCore("SendNotification", {
-                                Title = v.Name,
-                                Text = "Is observing",
-                                Duration = 30,
-                                Button1 = "Ignore",
-                                Icon = Players:GetUserThumbnailAsync(v.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48),
-                            })
+                    local observe = false
+                    local action = false
+                    for i, instance in pairs(v.Character:GetChildren()) do
+                        if instance.Name == "Action" then
+                            action = true
                         end
+
+                        if instance.Name == "Observe" then
+                            observe = true
+                        end
+                    end
+
+                    if observe and action and not table.find(beingObserved, v.Character) then
+                        observeNotification(v)
+                        table.insert(beingObserved, v.Character)
                     end
                 end
             end
@@ -1885,7 +1971,7 @@ local timerGui
 local airConnection
 local raycastParams = RaycastParams.new()
 raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-raycastParams.FilterDescendantsInstances = {game.Workspace.Live}
+raycastParams.FilterDescendantsInstances = {game.Workspace.AreaMarkers}
 
 MiscTab:CreateToggle({
     name = "AA Timer",
@@ -2031,5 +2117,14 @@ ColorTab:CreateColorPicker({
     resetColor = Color3.new(1, 1, 1),
     callback = function(color)
         settings.playerColor = color:ToHex()
+    end
+})
+
+ColorTab:CreateColorPicker({
+    name = "Chat Logger Illusionist",
+    default = Color3.fromHex(settings.chatlogIlluColor),
+    resetColor = Color3.fromRGB(0, 150, 255),
+    callback = function(color)
+        settings.chatlogIlluColor = color:ToHex()
     end
 })
