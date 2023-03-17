@@ -2100,11 +2100,7 @@ MiscTab:CreateToggle({
 MiscTab:CreateButton({
     name = "Server Hop",
     callback = function()
-        if game.GameId == 9978746069 then
-            TeleportService:Teleport(9978746069)
-        else
-
-        end
+        TeleportService:Teleport(9978746069)
     end
 })
 
