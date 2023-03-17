@@ -1032,22 +1032,6 @@ local function applyEsp(instance)
         
         return
     end
-
-    if instance:IsA("UnionOperation") and instance.Color ==Color3.fromRGB(29, 46, 58) then
-        if settings.nightstone then
-            local esp = Assets.Esp:Clone()
-            esp.Parent = instance
-            esp.Adornee = instance
-            esp.TextLabel.TextColor3 = Color3.fromHex(settings.nightstoneColor)
-            esp.TextLabel.Text = "[Nightstone]"
-
-            espHolder.night[instance] = esp
-        else
-            espHolder.night[instance] = false
-        end
-
-        return
-    end
     
     if instance.Color == Color3.fromRGB(254, 85, 100) then
         if settings.iceessence then
@@ -1060,6 +1044,22 @@ local function applyEsp(instance)
             espHolder.ice[instance] = esp
         else
             espHolder.ice[instance] = false
+        end
+
+        return
+    end
+
+    if instance:IsA("UnionOperation") and instance.Color ==Color3.fromRGB(29, 46, 58) then
+        if settings.nightstone then
+            local esp = Assets.Esp:Clone()
+            esp.Parent = instance
+            esp.Adornee = instance
+            esp.TextLabel.TextColor3 = Color3.fromHex(settings.nightstoneColor)
+            esp.TextLabel.Text = "[Nightstone]"
+
+            espHolder.night[instance] = esp
+        else
+            espHolder.night[instance] = false
         end
 
         return
@@ -1712,7 +1712,7 @@ ColorTab:CreateColorPicker({
         settings.phoenixFlowerColor = color:ToHex()
             
         if espOn and settings.phoenixFlower then
-            for i,v in pairs(espHolder.ma) do
+            for i,v in pairs(espHolder.phoenixFlower) do
                 v.TextLabel.TextColor3 = color
             end
         end
