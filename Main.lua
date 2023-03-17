@@ -12,6 +12,7 @@ local HttpService = game:GetService("HttpService")
 local ContextActionService = game:GetService("ContextActionService")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
 local Assets = game:GetObjects("rbxassetid://12795349082")[1]
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/kartFr/UiLib/main/Main.lua"))()
 local Gui = Library.new("Karts' poorest minion gui")
@@ -1997,6 +1998,13 @@ MiscTab:CreateToggle({
     end
 })
 
+MiscTab:CreateButton({
+    name = "Server Hop",
+    callback = function()
+        TeleportService:Teleport(9978746069)
+    end
+})
+
 local ColorTab = SettingsSection:CreateSection("Other Colors")
 
 ColorTab:CreateColorPicker({
@@ -2011,7 +2019,7 @@ ColorTab:CreateColorPicker({
 ColorTab:CreateColorPicker({
     name = "Mana Helper Normal",
     default = Color3.fromHex(settings.snapColor),
-    resetColor = Color3.new(1, 0, 0):ToHex(),
+    resetColor = Color3.new(1, 0, 0),
     callback = function(color)
         settings.snapColor = color:ToHex()
     end
@@ -2020,7 +2028,7 @@ ColorTab:CreateColorPicker({
 ColorTab:CreateColorPicker({
     name = "Player ESP",
     default = Color3.fromHex(settings.playerColor),
-    resetColor = Color3.new(1, 1, 1):ToHex(),
+    resetColor = Color3.new(1, 1, 1),
     callback = function(color)
         settings.playerColor = color:ToHex()
     end
