@@ -1,6 +1,7 @@
 local version = "0.02"
 repeat task.wait() until game:IsLoaded() 
 repeat task.wait() until game.Players.LocalPlayer.Character
+repeat task.wait() until game.PlaceId ~= 9978746069
 
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("StarterGui")
@@ -15,7 +16,7 @@ local Gui = Library.new("Karts' poorest minion gui")
 
 local camera = game.Workspace.CurrentCamera
 local spellPrecentages = {
-    Gate = {Snap = {.75, .85}},
+    Gate = {Snap = {.80, .90}},
     Ignis = {Snap = {.50, .60}, Normal = {.85, .95}},
     Gelidus = {Normal = {.80, .90}, Snap = {.60, 1}},
     Viribus = {Snap = {.60, .75}, Normal = {.25, .35}},
@@ -1464,13 +1465,13 @@ resetOnDeath.autopickup = TrinketSection:CreateToggle({
     callback = function(boolean)
         if boolean then
             pickup = RunService.Heartbeat:Connect(function()
-                local trinkets = game.Workspace:GetPartBoundsInRadius(Players.LocalPlayer.Character.Torso.Position, 12, overlapParams)
+                local trinkets = game.Workspace:GetPartBoundsInRadius(Players.LocalPlayer.Character.Torso.Position, 10, overlapParams)
 
                 if trinkets[1] then
                     for i,v in pairs(trinkets) do
                         if v.Parent == game.Workspace.Trinkets then
                             for i,v in pairs(v:GetChildren()) do
-                                if v.Name == "ClickPart" and amountPicked <= 5 then
+                                if v.Name == "ClickPart" and amountPicked <= 9 then
                                     fireclickdetector(v.ClickDetector)
                                     amountPicked += 1
                                     whenPicked = os.clock() + 1
@@ -1883,7 +1884,7 @@ local function observeNotification(player)
             end
         end
 
-        if bestMatchPlayer == Players.LocalPlayer and not Players.LocalPlayer:FindFirstChild("ObserveBlock") then
+        if bestMatchPlayer == Players.LocalPlayer and not Players.LocalPlayer.Backpack:FindFirstChild("ObserveBlock") then
             CoreGui:SetCore("SendNotification", {
                 Title = player.Name,
                 Text = "Is observing you",
