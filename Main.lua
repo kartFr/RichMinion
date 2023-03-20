@@ -582,6 +582,7 @@ local espGuis = {}
 VisualSection:CreateToggle({
     name = "Player Esp",
     default = settings.playerEsp,
+    callbackOnCreation = true,
     callback = function(boolean)
         settings.playerEsp = boolean
 
