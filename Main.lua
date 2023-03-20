@@ -1,7 +1,7 @@
-local version = "0.02"
+local version = "0.03"
+repeat task.wait() until game.PlaceId ~= 9978746069
 repeat task.wait() until game:IsLoaded() 
 repeat task.wait() until game.Players.LocalPlayer.Character
-repeat task.wait() until game.PlaceId ~= 9978746069
 
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("StarterGui")
@@ -114,6 +114,7 @@ local defaultSettings = {
     version = version,
     phoenixFlowerColor = "#960000",
     phoenixFlower = false,
+    playerEsp = false
 }
 local resetOnDeath = {}
 local proxy = {}
@@ -580,8 +581,10 @@ local espConnection
 local espGuis = {}
 VisualSection:CreateToggle({
     name = "Player Esp",
-    default = false,
+    default = settings.playerEsp,
     callback = function(boolean)
+        settings.playerEsp = boolean
+
         if boolean then
             espConnection = RunService.Heartbeat:Connect(function()
                 for i,v in pairs(game.Workspace.Live:GetChildren()) do
@@ -600,7 +603,7 @@ VisualSection:CreateToggle({
     
                             if settings.characterName then
                                 local player = Players[v.Name]
-                                esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. player.leaderstats.FirstName.Value.. " " .. player.leaderstats.LastName.Value .. player.leaderstats.UberTitle.Value .. "]"
+                                esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. player.leaderstats.FirstName.Value " ".. player.leaderstats.LastName.Value .. player.leaderstats.UberTitle.Value .. "]"
                             end
 
                             if settings.health then
@@ -800,10 +803,10 @@ AppearanceSection:CreateToggle({
 
         if boolean then
             fogConnection = game.Lighting:GetPropertyChangedSignal("FogEnd"):Connect(function()
-                game.Lighting.FogEnd = math.huge
+                game.Lighting.FogEnd = 9e9
             end)
 
-            game.Lighting.FogEnd = math.huge
+            game.Lighting.FogEnd = 9e9
         else
             if fogConnection then
                 fogConnection:Disconnect()
@@ -1484,7 +1487,8 @@ resetOnDeath.autopickup = TrinketSection:CreateToggle({
         else
             if pickup then
                 pickup:Disconnect()
-                pickup = false
+                amountPicked = 0
+                whenPicked = math.huge
             end
         end
     end
