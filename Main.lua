@@ -603,7 +603,16 @@ VisualSection:CreateToggle({
     
                             if settings.characterName then
                                 local player = Players[v.Name]
-                                esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. player.leaderstats.FirstName.Value " ".. player.leaderstats.LastName.Value .. player.leaderstats.UberTitle.Value .. "]"
+                                esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. player.leaderstats.FirstName.Value
+                                if player.leaderstats.LastName.Value ~= "" then
+                                    esp.TextLabel.Text = esp.TextLabel.Text .. " " .. player.leaderstats.LastName.Value
+                                end
+
+                                if player.leaderstats.UberTitle.Value ~= "" then
+                                    esp.TextLabel.Text = esp.TextLabel.Text .. ", " .. player.leaderstats.UberTitle.Value
+                                end
+
+                                esp.TextLabel.Text = esp.TextLabel.Text .. "]"
                             end
 
                             if settings.health then
@@ -875,11 +884,11 @@ backstab = RageSection:CreateToggle({
                 local parent = raycastResult.Instance
 
                 while true do
-                parent = parent.Parent
+                    parent = parent.Parent
                 
-                if parent.Parent == game.Workspace.Live then
+                    if parent.Parent == game.Workspace.Live then
                         break
-                end
+                    end
                 end
 
                 if parent ~= Players.LocalPlayer.Character then
