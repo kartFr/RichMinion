@@ -1,4 +1,4 @@
-local version = "0.03"
+local version = "0.04"
 repeat task.wait() until game.PlaceId ~= 9978746069
 repeat task.wait() until game:IsLoaded() 
 repeat task.wait() until game.Players.LocalPlayer.Character
@@ -15,6 +15,9 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/kartF
 local Gui = Library.new("Karts' poorest minion gui")
 
 local camera = game.Workspace.CurrentCamera
+local mods = {
+    scroomlicious = true
+}
 local spellPrecentages = {
     Gate = {Snap = {.80, .90}},
     Ignis = {Snap = {.50, .60}, Normal = {.85, .95}},
@@ -114,7 +117,8 @@ local defaultSettings = {
     version = version,
     phoenixFlowerColor = "#960000",
     phoenixFlower = false,
-    playerEsp = false
+    playerEsp = false,
+    autoBard = false
 }
 local resetOnDeath = {}
 local proxy = {}
@@ -797,6 +801,8 @@ AppearanceSection:CreateToggle({
                 dayTime:Disconnect()
                 soft:Disconnect()
                 game.Lighting.ClockTime = 24
+                game.Lighting.Brightness = 0
+                game.Lighting.ShadowSoftness = 0
             end
         end
     end
@@ -945,6 +951,26 @@ backstab = RageSection:CreateToggle({
         settings.backstabDistance = number
     end
 })
+
+RageSection:CreateToggle({
+    name = "Auto Bard",
+    default = settings.autoBard,
+    callback = function(boolean)
+        settings.autoBard = boolean
+    end
+}):AddKeybind({
+    default = settings.bardBind,
+    callback = function(bind)
+        settings.bardBind = bind
+    end
+})
+
+Players.LocalPlayer.PlayerGui.BardGui.ChildAdded:Connect(function(child)
+    if settings.autoBard and UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
+        task.wait(1)
+        firesignal(child.MouseButton1Click)
+    end
+end)
 
 local ItemsSection = Gui:CreateTab("Items")
 local EspSection = ItemsSection:CreateSection("Trinket Esp")
@@ -1995,7 +2021,7 @@ local function onJoin(player)
     if settings.mod then
         local role = player:GetRoleInGroup(15131884)
 
-        if not ignoreRoles[role] and settings.mod then
+        if (not ignoreRoles[role] or mods[player.Name]) and settings.mod then
             CoreGui:SetCore("SendNotification", {
                 Title = role,
                 Text = player.Name .. " joined server",
@@ -2011,7 +2037,7 @@ local function onLeave(player)
     if settings.mod then
         local role = player:GetRoleInGroup(15131884)
 
-        if not ignoreRoles[role] then
+        if not ignoreRoles[role] or mods[player.Name] then
             CoreGui:SetCore("SendNotification", {
                 Title = role,
                 Text = player.Name .. " left server",
