@@ -967,7 +967,7 @@ RageSection:CreateToggle({
 
 Players.LocalPlayer.PlayerGui.BardGui.ChildAdded:Connect(function(child)
     if settings.autoBard and UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
-        task.wait(1)
+        task.wait(9.5)
         firesignal(child.MouseButton1Click)
     end
 end)
