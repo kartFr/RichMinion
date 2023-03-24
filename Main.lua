@@ -18,57 +18,62 @@ local camera = game.Workspace.CurrentCamera
 local mods = {
     scroomlicious = "Moderator"
 }
-local spellPrecentages = {
-    Gate = {Snap = {.75, .83}},
-    Ignis = {Snap = {.50, .60}, Normal = {.85, .95}},
-    Gelidus = {Normal = {.80, .95}, Snap = {.60, 1}},
-    Viribus = {Snap = {.60, .75}, Normal = {.25, .35}},
-    Telorum = {Normal = {.80, .90}, Snap = {.75, .85}},
-    Snarvindur = {Snap = {.15, .30}, Normal = {.55, .75}},
-    Percutiens = {Snap = {.70, .80}, Normal = {.60, .70}},
-    Velo = {Snap = {.50, 1}, Normal = {.50, .60}},
-    Fimbulvetr = {Normal = {.85, .95}, Snap = {.70, .80}},
+local spellPrecentages = { -- Things with the dashes have been confrimed by going into the games source code (might be old tho)
+    Gate = {Snap = {.75, .83}}, --
+    Ignis = {Snap = {.50, .60}, Normal = {.85, .95}}, --
+    Gelidus = {Normal = {.80, .95}, Snap = {.80, 1}}, -- 
+    Viribus = {Snap = {.60, .70}, Normal = {.25, .35}}, --
+    Telorum = {Normal = {.80, .90}, Snap = {.70, .80}}, --
+    Snarvindur = {Snap = {.20, .30}, Normal = {.6, .75}}, --
+    Percutiens = {Snap = {.60, .70}, Normal = {.70, .80}}, --
+    Velo = {Snap = {.4, .6}, Normal = {.70, 1}}, --
+    Fimbulvetr = {Normal = {.84, .92}, Snap = {.70, .80}}, --
     Contrarium = {Snap = {.70, 1}, Normal = {.60, 1}},
-    ["Manus Dei"] = {Normal = {.95, .97}, Snap = {.50, .65}},
-    Nocere = {Normal = {.70, .80}, Snap = {.70, .90}},
+    ["Manus Dei"] = {Normal = {.9, .95}, Snap = {.50, .6}}, --
+    Nocere = {Normal = {.70, .85}, Snap = {.70, .85}},
     Sraunus = {Normal = {.01, .50}},
-    Hoppa = {Normal = {.30, .60}, Snap = {.5, .6}},
-    Tenebris = {Normal = {.90, 1}, Snap = {.4, .7}},
-    Trahere = {Normal = {.75, .85}},
-    Celeritas = {Normal = {.70, .99}, Snap = {.75, .95}},
+    Hoppa = {Normal = {.40, .60}, Snap = {.5, .6}}, --
+    Tenebris = {Normal = {.90, 1}, Snap = {.4, .6}}, --
+    Trahere = {Normal = {.75, .85}}, --
+    Celeritas = {Normal = {.70, .9}, Snap = {.70, .8}}, --
     Trixstus = {Normal = {.30, .70}, Snap = {.3, .5}},
-    ["Sagitta Sol"] = {Normal = {.50, .60}, Snap = {.40, .70}},
+    ["Sagitta Sol"] = {Normal = {.50, .65}, Snap = {.40, .60}}, --
     Scrupus = {Normal = {.01, 1}},
-    Armis = {Normal = {.40, .60}, Snap = {.70, .85}},
+    Armis = {Normal = {.40, .60}, Snap = {.70, .8}}, --
     Hystericus = {Normal = {.75, .85}, Snap = {.10, .40}},
-    Verdien = {Snap = {.8, .9}, Normal = {.7, 1}},
+    Verdien = {Snap = {.75, .85}, Normal = {.75, 1}}, --
     ["Fons Vitae"] = {Normal = {.70, 1}, Snap = {.5, 1}},
-    Perflora = {Normal = {.7, .9}, Snap = {.15, .45}},
-    Floresco = {Normal = {.9, 1}, Snap = {.8, 1}},
+    Perflora = {Normal = {.7, .9}, Snap = {.3, .5}},
+    Floresco = {Normal = {.9, 1}, Snap = {.8, .95}},
     Mirgeti = {Normal = {.01, 1}},
     Krusa = {Normal = {.7, 1}},
     Spindulys = {Normal = {.7, 1}},
     Custos = {Normal = {.5, .6}},
     Claritum = {Normal = {.9, 1}},
-    Globus = {Normal = {.6, 1}},
+    Globus = {Normal = {.7, 1}}, --
     Intermissum = {Normal = {.6, 1}},
     Dominus = {Normal = {.3, 1}},
     ["Mana Fly"] = {Normal = {.3, 1}},
     Duobe = {Normal = {.01, 1}},
     Compress = {Normal = {.01, 1}},
     ["Terra Rebus"] = {Normal = {.01, 1}},
-    Inferi = {Normal = {.01, .35}},
-    Reditus = {Normal = {.3, 1}},
+    Inferi = {Normal = {.1, .35}},
+    Reditus = {Normal = {.5, 1}}, --
     Ligans = {Normal = {.6, .7}},
-    Secare = {Normal = {.9, .95}},
-    Furantur = {Normal = {.55, .80}},
-    ["Howler Summoning"] = {Normal = {.6, .85}},
-    ["Worm Bombs"] = {Normal = {.55, .8}},
+    Secare = {Normal = {.9, .95}}, --
+    Furantur = {Normal = {.6, .80}}, --
+    ["Howler Summoning"] = {Normal = {.6, .8}}, --
+    ["Worm Bombs"] = {Normal = {.60, .75}}, --
     ["Worm Blast"] = {Normal = {.01, .9}},
     ["Call of The Dead"] = {Normal = {.95, 1}},
     Coercere = {Normal = {.01, 1}},
     Liber = {Normal = {.01, 1}},
     Scribo = {Normal = {.01, 1}},
+    Gourdus = {Normal = {.75, 1}}, -- 
+    Mori = {Normal = {.30, .32}, Snap = {.40, .41}}, --
+    Nosferatus = {Normal = {.9, 1}}, --
+    Pondus = {Normal = {.70, .9}, Snap = {.2, .3}}, --
+    ["Shrieker"] = {Normal = {.3, .5}} --
 }
 
 local defaultSettings = {
@@ -567,16 +572,19 @@ VisualSection:CreateToggle({
                 end
             end)
         else
-            spellCheck:Disconnect()
+            if spellCheck then
+                spellCheck:Disconnect()
+                spellCheck = false
 
-            if normalGui then
-                normalGui:Destroy()
-                normalGui = false
-            end
+                if normalGui then
+                    normalGui:Destroy()
+                    normalGui = false
+                end
 
-            if snapGui then
-                snapGui:Destroy()
-                snapGui = false
+                if snapGui then
+                    snapGui:Destroy()
+                    snapGui = false
+                end
             end
         end
     end
@@ -586,7 +594,7 @@ RunService.Heartbeat:Connect(function()
     for i,v in pairs(game.Workspace.Live:GetChildren()) do
         if v:FindFirstChild("Humanoid") then
             v.Humanoid.HealthDisplayDistance = 100
-            v.Humanoid.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+            v.Humanoid.HealthDisplayType = settings.health and Enum.HumanoidHealthDisplayType.AlwaysOn or Enum.HumanoidHealthDisplayType.AlwaysOff
             v.Humanoid.DisplayDistanceType = settings.health and Enum.HumanoidDisplayDistanceType.Viewer or Enum.HumanoidDisplayDistanceType.Subject
         end
     end
@@ -687,13 +695,16 @@ VisualSection:CreateToggle({
                 end
             end)
         else
-            espConnection:Disconnect()
+            if espConnection then
+                espConnection:Disconnect()
+                espConnection = false
 
-            for i,v in pairs(espGuis) do
-                v:Destroy()
+                for i,v in pairs(espGuis) do
+                    v:Destroy()
+                end
+
+                espGuis = {}
             end
-
-            espGuis = {}
         end
     end
 }):AddKeybind({
@@ -982,6 +993,7 @@ backstab = RageSection:CreateToggle({
     end
 })
 
+local bardButtons = {}
 RageSection:CreateToggle({
     name = "Auto Bard",
     default = settings.autoBard,
@@ -996,17 +1008,22 @@ RageSection:CreateToggle({
 })
 
 RunService.Heartbeat:Connect(function()
-    if not settings.autoBard or UserInputService.MouseBehavior == Enum.MouseBehavior.LockCenter then
-        return
+    if settings.autoBard and UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
+        for i,v in pairs(Players.LocalPlayer.PlayerGui.BardGui:GetChildren()) do
+            if v.Name == "Button" then
+                if v.OuterRing.Size.X.Offset <= 130 and not bardButtons[v] then
+                    firesignal(v.MouseButton1Click)
+                    bardButtons[v] = true
+                end
+            end
+        end
     end
+end)
 
-    for i,v in pairs(game.Players.LocalPlayer.PlayerGui.BardGui:GetChildren()) do
-		if v.Name == "Button" then
-			if v.OuterRing.Size.X.Offset <= 110 then
-				firesignal(v.MouseButton1Click)
-			end
-		end
-	end
+Players.LocalPlayer.PlayerGui.BardGui.ChildRemoved:Connect(function(child)
+    if bardButtons[child] then
+        bardButtons[child] = nil
+    end
 end)
 
 local ItemsSection = Gui:CreateTab("Items")
