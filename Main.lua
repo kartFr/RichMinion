@@ -581,6 +581,65 @@ VisualSection:CreateToggle({
     end
 })
 
+RunService.Heartbeat:Connect(function()
+    for i,v in pairs(game.Workspace.Live:GetChildren()) do
+        if v:FindFirstChild("Humanoid") then
+            v.Humanoid.HealthDisplayDistance = 100
+            v.Humanoid.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+            v.Humanoid.DisplayDistanceType = settings.health and Enum.HumanoidDisplayDistanceType.Viewer or Enum.HumanoidDisplayDistanceType.None
+        end
+    end
+end)
+
+VisualSection:CreateToggle({
+    name = "Eyes of Elemira",
+    default = settings.health,
+    callback = function(boolean)
+        settings.health = boolean
+    end
+})
+
+local intentConnection
+local seerGuis = {}
+VisualSection:CreateToggle({
+    name = "Intent",
+    default = settings.tool,
+    callback = function(boolean)
+        settings.tool = boolean
+
+        if boolean then
+            intentConnection = RunService.Heartbeat:Connect(function()
+                for i,v in pairs(game.Workspace.Live:GetChildren()) do
+                    if string.sub(v.Name, 1, 1) ~= "." and v ~= Players.LocalPlayer.Character then
+                        local esp = v.Head:FindFirstChild("Intent")
+                        if not esp then
+                            esp = Assets.Intent:Clone()
+                            esp.Parent = v.Head
+                            esp.StudsOffsetWorldSpace = Vector3.new(0, 0, 0)
+                            table.insert(seerGuis, esp)
+                        end
+
+                        local tool = v:FindFirstChildWhichIsA("Tool")
+                        if tool then
+                            esp.TextLabel.Text = esp.TextLabel.Text .. tool.Name
+                        else
+                            esp.TextLabel.Text = esp.TextLabel.Text .. ""
+                        end
+                    end
+                end         
+            end)
+        else
+            intentConnection:Disconnect()
+
+            for i,v in pairs(seerGuis) do
+                v:Destroy()
+            end
+
+            seerGuis = {}
+        end
+    end
+})
+
 local espConnection
 local espGuis = {}
 VisualSection:CreateToggle({
@@ -599,7 +658,7 @@ VisualSection:CreateToggle({
                             if not esp then
                                 esp = Assets.Esp:Clone()
                                 esp.Parent = v.Head
-                                esp.StudsOffsetWorldSpace = Vector3.new(0, 1, 0)
+                                esp.StudsOffsetWorldSpace = Vector3.new(0, -5, 0)
                                 table.insert(espGuis, esp)
                             end
 
@@ -618,19 +677,6 @@ VisualSection:CreateToggle({
                                 end
 
                                 esp.TextLabel.Text = esp.TextLabel.Text .. "]"
-                            end
-
-                            if settings.health then
-                                esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. math.floor(v.Humanoid.Health) .. "/" .. math.floor(v.Humanoid.MaxHealth) .. "]"
-                            end
-
-                            if settings.tool then
-                                local tool = v:FindFirstChildWhichIsA("Tool")
-                                if tool then
-                                    esp.TextLabel.Text = esp.TextLabel.Text .. "[" .. tool.Name .. "]"
-                                else
-                                    esp.TextLabel.Text = esp.TextLabel.Text .. "[Fists]"
-                                end
                             end
 
                             if settings.playerDistance then
@@ -662,22 +708,6 @@ VisualSection:CreateToggle({
     default = settings.characterName,
     callback = function(boolean)
         settings.characterName = boolean
-    end
-})
-
-VisualSection:CreateToggle({
-    name = "Health ESP",
-    default = settings.health,
-    callback = function(boolean)
-        settings.health = boolean
-    end
-})
-
-VisualSection:CreateToggle({
-    name = "Tool ESP",
-    default = settings.tool,
-    callback = function(boolean)
-        settings.tool = boolean
     end
 })
 
@@ -965,11 +995,18 @@ RageSection:CreateToggle({
     end
 })
 
-Players.LocalPlayer.PlayerGui.BardGui.ChildAdded:Connect(function(child)
-    if settings.autoBard and UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
-        task.wait(.9 + ((math.random(3, 11) / 100)))
-        firesignal(child.MouseButton1Click)
+RunService.Heartbeat:Connect(function()
+    if not settings.autoBard or UserInputService.MouseBehavior == Enum.MouseBehavior.LockCenter then
+        return
     end
+
+    for i,v in pairs(game.Players.LocalPlayer.PlayerGui.BardGui:GetChildren()) do
+		if v.Name == "Button" then
+			if v.OuterRing.Size.X.Offset <= 110 then
+				firesignal(v.MouseButton1Click)
+			end
+		end
+	end
 end)
 
 local ItemsSection = Gui:CreateTab("Items")
