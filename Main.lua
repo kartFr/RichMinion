@@ -1,4 +1,4 @@
-local version = "0.04"
+local version = "0.05"
 repeat task.wait() until game.PlaceId ~= 9978746069
 repeat task.wait() until game:IsLoaded() 
 repeat task.wait() until game.Players.LocalPlayer.Character
@@ -19,9 +19,9 @@ local mods = {
     scroomlicious = "Moderator"
 }
 local spellPrecentages = {
-    Gate = {Snap = {.80, .90}},
+    Gate = {Snap = {.75, .83}},
     Ignis = {Snap = {.50, .60}, Normal = {.85, .95}},
-    Gelidus = {Normal = {.80, .90}, Snap = {.60, 1}},
+    Gelidus = {Normal = {.80, .95}, Snap = {.60, 1}},
     Viribus = {Snap = {.60, .75}, Normal = {.25, .35}},
     Telorum = {Normal = {.80, .90}, Snap = {.75, .85}},
     Snarvindur = {Snap = {.15, .30}, Normal = {.55, .75}},
@@ -118,7 +118,8 @@ local defaultSettings = {
     phoenixFlowerColor = "#960000",
     phoenixFlower = false,
     playerEsp = false,
-    autoBard = false
+    autoBard = false,
+    esp = false,
 }
 local resetOnDeath = {}
 local proxy = {}
@@ -586,7 +587,7 @@ RunService.Heartbeat:Connect(function()
         if v:FindFirstChild("Humanoid") then
             v.Humanoid.HealthDisplayDistance = 100
             v.Humanoid.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
-            v.Humanoid.DisplayDistanceType = settings.health and Enum.HumanoidDisplayDistanceType.Viewer or Enum.HumanoidDisplayDistanceType.None
+            v.Humanoid.DisplayDistanceType = settings.health and Enum.HumanoidDisplayDistanceType.Viewer or Enum.HumanoidDisplayDistanceType.Subject
         end
     end
 end)
@@ -615,15 +616,14 @@ VisualSection:CreateToggle({
                         if not esp then
                             esp = Assets.Intent:Clone()
                             esp.Parent = v.Head
-                            esp.StudsOffsetWorldSpace = Vector3.new(0, 0, 0)
                             table.insert(seerGuis, esp)
                         end
 
                         local tool = v:FindFirstChildWhichIsA("Tool")
                         if tool then
-                            esp.TextLabel.Text = esp.TextLabel.Text .. tool.Name
+                            esp.InformationLabel.Text = tool.Name
                         else
-                            esp.TextLabel.Text = esp.TextLabel.Text .. ""
+                            esp.InformationLabel.Text = ""
                         end
                     end
                 end         
@@ -1190,13 +1190,11 @@ local function applyEsp(instance)
     
 end
 
-local espOn = false
-
 EspSection:CreateToggle({
     name = "ESP",
-    default = false,
+    default = settings.esp,
     callback = function(boolean)
-        espOn = boolean
+        settings.esp = boolean
 
         if boolean then
             for i,v in pairs(game.Workspace.Trinkets:GetChildren()) do
@@ -1232,7 +1230,7 @@ EspSection:CreateToggle({
     callback = function(boolean)
         settings.scroll = boolean
 
-        if espOn then
+        if settings.esp then
             if boolean then
                 for i,v in pairs(espHolder.scroll) do
                     local esp = Assets.Esp:Clone()
@@ -1261,7 +1259,7 @@ EspSection:CreateToggle({
     callback = function(boolean)
         settings.iceessence = boolean
 
-        if espOn then
+        if settings.esp then
             if boolean then
                 for i,v in pairs(espHolder.ice) do
                     local esp = Assets.Esp:Clone()
@@ -1291,7 +1289,7 @@ if game.PlaceId == 10215650900 then
         callback = function(boolean)
             settings.phoenixFlower = boolean
     
-            if espOn then
+            if settings.esp then
                 if boolean then
                     for i,v in pairs(espHolder.phoenixFlower) do
                         local esp = Assets.Esp:Clone()
@@ -1320,7 +1318,7 @@ else
         callback = function(boolean)
             settings.phoenixDown = boolean
     
-            if espOn then
+            if settings.esp then
                 if boolean then
                     for i,v in pairs(espHolder.phoenix) do
                         local esp = Assets.Esp:Clone()
@@ -1349,7 +1347,7 @@ else
         callback = function(boolean)
             settings.nightstone = boolean
     
-            if espOn then
+            if settings.esp then
                 if boolean then
                     for i,v in pairs(espHolder.night) do
                         local esp = Assets.Esp:Clone()
@@ -1378,7 +1376,7 @@ else
         callback = function(boolean)
             settings.amuletofwhite = boolean
     
-            if espOn then
+            if settings.esp then
                 if boolean then
                     for i,v in pairs(espHolder.white) do
                         local esp = Assets.Esp:Clone()
@@ -1407,7 +1405,7 @@ else
         callback = function(boolean)
             settings.lannis = boolean
     
-            if espOn then
+            if settings.esp then
                 if boolean then
                     for i,v in pairs(espHolder.lannis) do
                         local esp = Assets.Esp:Clone()
@@ -1436,7 +1434,7 @@ else
         callback = function(boolean)
             settings.howler = boolean
     
-            if espOn then
+            if settings.esp then
                 if boolean then
                     for i,v in pairs(espHolder.howler) do
                         local esp = Assets.Esp:Clone()
@@ -1465,7 +1463,7 @@ else
         callback = function(boolean)
             settings.azael = boolean
     
-            if espOn then
+            if settings.esp then
                 if boolean then
                     for i,v in pairs(espHolder.azael) do
                         local esp = Assets.Esp:Clone()
@@ -1494,7 +1492,7 @@ else
         callback = function(boolean)
             settings.ma = boolean
     
-            if espOn then
+            if settings.esp then
                 if boolean then
                     for i,v in pairs(espHolder.ma) do
                         local esp = Assets.Esp:Clone()
@@ -1654,7 +1652,7 @@ ColorTab:CreateColorPicker({
         print(color)
         settings.scrollColor = color:ToHex()
 
-        if espOn and settings.scroll then
+        if settings.esp and settings.scroll then
             for i,v in pairs(espHolder.scroll) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1669,7 +1667,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.phoenixDownColor = color:ToHex()
 
-        if espOn and settings.phoenixDown then
+        if settings.esp and settings.phoenixDown then
             for i,v in pairs(espHolder.phoenix) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1684,7 +1682,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.nightstoneColor = color:ToHex()
 
-        if espOn and settings.nightstone then
+        if settings.esp and settings.nightstone then
             for i,v in pairs(espHolder.nightstone) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1699,7 +1697,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.iceColor = color:ToHex()
 
-        if espOn and settings.ice then
+        if settings.esp and settings.ice then
             for i,v in pairs(espHolder.ice) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1714,7 +1712,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.whiteColor = color:ToHex()
 
-        if espOn and settings.amuletofwhite then
+        if settings.esp and settings.amuletofwhite then
             for i,v in pairs(espHolder.white) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1729,7 +1727,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.lannisColor = color:ToHex()
 
-        if espOn and settings.lannis then
+        if settings.esp and settings.lannis then
             for i,v in pairs(espHolder.lannis) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1744,7 +1742,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.howlerColor = color:ToHex()
 
-        if espOn and settings.howler then
+        if settings.esp and settings.howler then
             for i,v in pairs(espHolder.howler) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1759,7 +1757,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.azaelColor = color:ToHex()
 
-        if espOn and settings.azael then
+        if settings.esp and settings.azael then
             for i,v in pairs(espHolder.azael) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1774,7 +1772,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.maColor = color:ToHex()
             
-        if espOn and settings.ma then
+        if settings.esp and settings.ma then
             for i,v in pairs(espHolder.ma) do
                 v.TextLabel.TextColor3 = color
             end
@@ -1789,7 +1787,7 @@ ColorTab:CreateColorPicker({
     callback = function(color)
         settings.phoenixFlowerColor = color:ToHex()
             
-        if espOn and settings.phoenixFlower then
+        if settings.esp and settings.phoenixFlower then
             for i,v in pairs(espHolder.phoenixFlower) do
                 v.TextLabel.TextColor3 = color
             end
