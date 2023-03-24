@@ -16,7 +16,7 @@ local Gui = Library.new("Karts' poorest minion gui")
 
 local camera = game.Workspace.CurrentCamera
 local mods = {
-    scroomlicious = true
+    scroomlicious = ["Moderator"]
 }
 local spellPrecentages = {
     Gate = {Snap = {.80, .90}},
@@ -863,7 +863,7 @@ AppearanceSection:CreateToggle({
                 ambienceConnection = false
                 brightfb:Disconnect()
                 shadowfb:Disconnect()
-                game.Lighting.GlobalShadows = false
+                game.Lighting.GlobalShadows = true
             end
         end
     end
@@ -967,7 +967,7 @@ RageSection:CreateToggle({
 
 Players.LocalPlayer.PlayerGui.BardGui.ChildAdded:Connect(function(child)
     if settings.autoBard and UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
-        task.wait(9.5)
+        task.wait(.98)
         firesignal(child.MouseButton1Click)
     end
 end)
@@ -2023,7 +2023,7 @@ local function onJoin(player)
 
         if (not ignoreRoles[role] or mods[player.Name]) and settings.mod then
             CoreGui:SetCore("SendNotification", {
-                Title = role,
+                Title = mods[player.Name] or role,
                 Text = player.Name .. " joined server",
                 Duration = math.huge,
                 Button1 = "Ignore",
