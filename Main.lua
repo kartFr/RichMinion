@@ -16,7 +16,7 @@ local Gui = Library.new("Karts' poorest minion gui")
 
 local camera = game.Workspace.CurrentCamera
 local mods = {
-    scroomlicious = ["Moderator"]
+    scroomlicious = "Moderator"
 }
 local spellPrecentages = {
     Gate = {Snap = {.80, .90}},
