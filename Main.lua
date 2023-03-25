@@ -230,6 +230,32 @@ resetOnDeath.fly = PlayerSection:CreateToggle({
     end
 })
 
+local insideBox = false
+
+for i,v in pairs(Players.LocalPlayer.PlayerGui.LeaderboardGui.MainFrame.ScrollingFrame:GetChildren()) do
+    v.MouseEnter:Connect(function()
+        insideBox = v
+    end)
+
+    v.MouseLeave:Connect(function()
+        if insideBox == v then
+            insideBox = false
+        end
+    end)
+end
+
+Players.LocalPlayer.PlayerGui.LeaderboardGui.MainFrame.ScrollingFrame.ChildAdded:Connect(function(child)
+    child.MouseEnter:Connect(function()
+        insideBox = child
+    end)
+
+    child.MouseLeave:Connect(function()
+        if insideBox == child then
+            insideBox = false
+        end
+    end)
+end)
+
 local canWalk = false
 local originalWalkSpeed
 local speedEvent
@@ -1006,7 +1032,6 @@ RageSection:CreateToggle({
         settings.bardBind = bind
     end
 })
-
 RunService.Heartbeat:Connect(function()
     if settings.autoBard and UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
         for i,v in pairs(Players.LocalPlayer.PlayerGui.BardGui:GetChildren()) do
@@ -1862,9 +1887,28 @@ local function logChat(player, message)
 end
 
 ContextActionService:BindAction("mousebutton1click", function(_actionName, inputState, _inputObject)
-    if inputState == Enum.UserInputState.Begin and spectating then
+    if inputState ~= Enum.UserInputState.Begin then
+        return Enum.ContextActionResult.Pass
+    end
+
+    if spectating then
         spectating = false
         camera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+    end
+
+    if insideBox then
+        local newName = string.gsub(insideBox.Text, "\226\128\142", "")
+        
+        for i,v in ipairs(workspace.Live:GetChildren()) do
+            if v.Name == newName then
+                if v:FindFirstChild("Humanoid") then
+                    spectating = true
+                    camera.CameraSubject = v.Humanoid
+                end
+
+                break
+            end
+        end
     end
 
     return Enum.ContextActionResult.Pass
@@ -2260,7 +2304,10 @@ MiscTab:CreateToggle({
 MiscTab:CreateButton({
     name = "Server Hop",
     callback = function()
-        TeleportService:Teleport(9978746069)
+        if not Players.LocalPlayer:FindFirstChild("Danger") and Players.LocalPlayer:FindFirstChild("MortalDanger") then
+            Players.LocalPlayer:Kick("Hopping")
+            TeleportService:Teleport(9978746069)
+        end
     end
 })
 
