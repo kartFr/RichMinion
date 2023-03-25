@@ -2304,7 +2304,7 @@ MiscTab:CreateToggle({
 MiscTab:CreateButton({
     name = "Server Hop",
     callback = function()
-        if not Players.LocalPlayer:FindFirstChild("Danger") and Players.LocalPlayer:FindFirstChild("MortalDanger") then
+        if not Players.LocalPlayer:FindFirstChild("Danger") and not Players.LocalPlayer:FindFirstChild("MortalDanger") then
             Players.LocalPlayer:Kick("Hopping")
             TeleportService:Teleport(9978746069)
         end
