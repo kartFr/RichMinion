@@ -639,6 +639,7 @@ local seerGuis = {}
 VisualSection:CreateToggle({
     name = "Intent",
     default = settings.tool,
+    callbackOnCreation = true,
     callback = function(boolean)
         settings.tool = boolean
 
@@ -663,13 +664,15 @@ VisualSection:CreateToggle({
                 end         
             end)
         else
-            intentConnection:Disconnect()
+            if intentConnection then
+                intentConnection:Disconnect()
 
-            for i,v in pairs(seerGuis) do
-                v:Destroy()
+                for i,v in pairs(seerGuis) do
+                    v:Destroy()
+                end
+
+                seerGuis = {}
             end
-
-            seerGuis = {}
         end
     end
 })
@@ -1235,6 +1238,7 @@ end
 EspSection:CreateToggle({
     name = "ESP",
     default = settings.esp,
+    callbackOnCreation = true,
     callback = function(boolean)
         settings.esp = boolean
 
