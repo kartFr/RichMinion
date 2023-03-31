@@ -1,4 +1,4 @@
-local version = "0.05"
+local version = "0.06"
 repeat task.wait() until game.PlaceId ~= 9978746069
 repeat task.wait() until game:IsLoaded() 
 repeat task.wait() until game.Players.LocalPlayer.Character
@@ -125,6 +125,8 @@ local defaultSettings = {
     playerEsp = false,
     autoBard = false,
     esp = false,
+    question = false,
+    questionColor = "#5A005A"
 }
 local resetOnDeath = {}
 local proxy = {}
@@ -977,6 +979,7 @@ backstab = RageSection:CreateToggle({
                         distanceConnection:Disconnect()
                         distanceConnection = false
                         hasTarget = false
+                        backstab:set(false)
                     end)
 
                     distanceConnection = RunService.Heartbeat:Connect(function()
@@ -988,6 +991,7 @@ backstab = RageSection:CreateToggle({
                             distanceConnection:Disconnect()
                             distanceConnection = false
                             hasTarget = false
+                            backstab:set(false)
                         end
                     end)
                 else
@@ -1067,7 +1071,8 @@ local espHolder = {
     ["howler"] = {},
     ["ma"] = {},
     ["azael"] = {},
-    ["phoenixFlower"] = {}
+    ["phoenixFlower"] = {},
+    ["question"] = {}
 }
 local espEvent
 
@@ -1233,6 +1238,21 @@ local function applyEsp(instance)
         return
     end
     
+    if instance:FindFirstChild("OrbParticle") then
+        if settings.question then
+            local esp = Assets.Esp:Clone()
+            esp.Parent = instance
+            esp.Adornee = instance
+            esp.TextLabel.TextColor3 = Color3.fromHex(settings.questionColor)
+            esp.TextLabel.Text = "[???]"
+
+            espHolder.question[instance] = esp
+        else
+            espHolder.question[instance] = false
+        end
+
+        return
+    end
 end
 
 EspSection:CreateToggle({
@@ -1560,6 +1580,35 @@ else
             end
         end
     })
+
+    EspSection:CreateToggle({
+        name = "???",
+        default = settings.question,
+        callback = function(boolean)
+            settings.question = boolean
+    
+            if settings.esp then
+                if boolean then
+                    for i,v in pairs(espHolder.question) do
+                        local esp = Assets.Esp:Clone()
+                        esp.Parent = i
+                        esp.Adornee = i
+                        esp.TextLabel.TextColor3 = Color3.fromHex(settings.questionColor)
+                        esp.TextLabel.Text = "[???]"
+    
+                        espHolder.question[i] = esp
+                    end
+                else
+                    for i,v in pairs(espHolder.question) do
+                        if v then
+                            v:Destroy()
+                            espHolder.question[i] = false
+                        end
+                    end
+                end
+            end
+        end
+    })
 end
 
 
@@ -1827,7 +1876,7 @@ ColorTab:CreateColorPicker({
 })
 
 ColorTab:CreateColorPicker({
-    name = "Phoenix Flower",
+    name = "Phoenix Flower ESP Color",
     default = Color3.fromHex(settings.phoenixFlowerColor),
     resetColor = Color3.fromHex("#960000"),
     callback = function(color)
@@ -1835,6 +1884,21 @@ ColorTab:CreateColorPicker({
             
         if settings.esp and settings.phoenixFlower then
             for i,v in pairs(espHolder.phoenixFlower) do
+                v.TextLabel.TextColor3 = color
+            end
+        end
+    end
+})
+
+ColorTab:CreateColorPicker({
+    name = "??? Color ESP Color",
+    default = Color3.fromHex(settings.questionColor),
+    resetColor = Color3.fromHex("#5A005A"),
+    callback = function(color)
+        settings.questionColor = color:ToHex()
+            
+        if settings.esp and settings.question then
+            for i,v in pairs(espHolder.question) do
                 v.TextLabel.TextColor3 = color
             end
         end
@@ -1980,6 +2044,10 @@ MiscTab:CreateToggle({
 local beingObserved = {}
 
 local function observeNotification(player)
+    local observingPlayer = false
+    local illuChat
+    local remove
+
     if settings.observe then
         CoreGui:SetCore("SendNotification", {
             Title = player.Name,
@@ -1990,8 +2058,6 @@ local function observeNotification(player)
         })
     end
     
-    local illuChat
-    local remove
     remove = player.Character.ChildRemoved:Connect(function(child)
         if child.Name == "Action" then
             if settings.observe then
@@ -2024,14 +2090,28 @@ local function observeNotification(player)
             end
         end
 
-        if bestMatchPlayer == Players.LocalPlayer and not Players.LocalPlayer.Backpack:FindFirstChild("ObserveBlock") then
-            CoreGui:SetCore("SendNotification", {
-                Title = player.Name,
-                Text = "Is observing you",
-                Duration = math.huge,
-                Button1 = "Ignore",
-                Icon = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
-            })
+        if not Players.LocalPlayer.Backpack:FindFirstChild("ObserveBlock") then
+            if bestMatchPlayer == Players.LocalPlayer then
+                observingPlayer = true
+
+                CoreGui:SetCore("SendNotification", {
+                    Title = player.Name,
+                    Text = "Started observing you",
+                    Duration = math.huge,
+                    Button1 = "Ignore",
+                    Icon = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+                })
+            elseif observingPlayer == true and bestMatchPlayer ~= player and bestMatchPlayer.Character and bestMatchPlayer.Character:FindFirstChild("Head") and not bestMatchPlayer.Backpack:FindFirstChild("ObserveBlock") then
+                observingPlayer = false
+
+                CoreGui:SetCore("SendNotification", {
+                    Title = player.Name,
+                    Text = "Stopped observing you",
+                    Duration = math.huge,
+                    Button1 = "Ignore",
+                    Icon = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+                })
+            end
         end
     end)
 end
@@ -2308,10 +2388,14 @@ MiscTab:CreateToggle({
 MiscTab:CreateButton({
     name = "Server Hop",
     callback = function()
-        if not Players.LocalPlayer:FindFirstChild("Danger") and not Players.LocalPlayer:FindFirstChild("MortalDanger") then
-            Players.LocalPlayer:Kick("Hopping")
-            TeleportService:Teleport(9978746069)
-        end
+        local connection
+        connection = RunService.Heartbeat:Connect(function()
+            if not Players.LocalPlayer:FindFirstChild("Danger") and not Players.LocalPlayer:FindFirstChild("MortalDanger") then
+                Players.LocalPlayer:Kick("Hopping")
+                TeleportService:Teleport(9978746069)
+                connection:Disconnect()
+            end
+        end)
     end
 })
 
@@ -2327,7 +2411,7 @@ ColorTab:CreateColorPicker({
 })
 
 ColorTab:CreateColorPicker({
-    name = "Mana Helper Normal",
+    name = "Mana Helper Snap",
     default = Color3.fromHex(settings.snapColor),
     resetColor = Color3.new(1, 0, 0),
     callback = function(color)
