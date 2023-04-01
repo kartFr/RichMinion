@@ -182,7 +182,7 @@ end))
 
 for i, textLabel in pairs(Players.LocalPlayer.PlayerGui.LeaderboardGui.MainFrame.ScrollingFrame:GetChildren()) do
     for i,v in pairs(Players:GetPlayers()) do
-        if if v.leaderstats:FindFirstChild("FirstName") and string.find(textLabel.Text, v.leaderstats.FirstName.Value) and string.find(textLabel.Text, v.leaderstats.LastName.Value) then
+        if v.leaderstats:FindFirstChild("FirstName") and string.find(textLabel.Text, v.leaderstats.FirstName.Value) and string.find(textLabel.Text, v.leaderstats.LastName.Value) then
             local role = v:GetRoleInGroup(15131884)
 
             if not ignoreRoles[role] or mods[v.Name] then
