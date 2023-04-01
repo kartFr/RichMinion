@@ -180,7 +180,7 @@ old = hookfunction(Instance.new("RemoteEvent").FireServer, newcclosure(function(
     return old(self, ...)
 end))
 
-for i, textLabel in pairs(Players.LocalPlayer.PlayerGui.LeaderboardGui.MainFrame.ScrollingFrame:GetChildren()) do
+local function watchLeaderboard(textLabel)
     for i,v in pairs(Players:GetPlayers()) do
         if v.leaderstats:FindFirstChild("FirstName") and string.find(textLabel.Text, v.leaderstats.FirstName.Value) and string.find(textLabel.Text, v.leaderstats.LastName.Value) then
             local role = v:GetRoleInGroup(15131884)
@@ -200,8 +200,14 @@ for i, textLabel in pairs(Players.LocalPlayer.PlayerGui.LeaderboardGui.MainFrame
     end
 end
 
-Players.LocalPlayer.PlayerGui.LeaderboardGui.MainFrame.ScrollingFrame.ChildAdded:Connect(function()
-    
+task.spawn(function()
+    for i, textLabel in pairs(Players.LocalPlayer.PlayerGui.LeaderboardGui.MainFrame.ScrollingFrame:GetChildren()) do
+        watchLeaderboard(textLabel)
+    end    
+end)
+
+Players.LocalPlayer.PlayerGui.LeaderboardGui.MainFrame.ScrollingFrame.ChildAdded:Connect(function(textLabel)
+    watchLeaderboard(textLabel)
 end)
 local CharacterTab = Gui:CreateTab("Local Player")
 local PlayerSection = CharacterTab:CreateSection("Local Player")
