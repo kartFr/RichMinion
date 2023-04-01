@@ -14,6 +14,7 @@ local Assets = game:GetObjects("rbxassetid://12795349082")[1]
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/kartFr/UiLib/main/Main.lua"))()
 local Gui = Library.new("Karts' poorest minion gui")
 
+local spectating = false
 local camera = game.Workspace.CurrentCamera
 local mods = {
     scroomlicious = "Moderator"
@@ -666,7 +667,7 @@ VisualSection:CreateToggle({
 RunService.Heartbeat:Connect(function()
     for i,v in pairs(game.Workspace.Live:GetChildren()) do
         if v:FindFirstChild("Humanoid") then
-            v.Humanoid.HealthDisplayDistance = 100
+            v.Humanoid.HealthDisplayDistance = not spectating and 100 or math.huge
             v.Humanoid.HealthDisplayType = settings.health and Enum.HumanoidHealthDisplayType.AlwaysOn or Enum.HumanoidHealthDisplayType.AlwaysOff
             v.Humanoid.DisplayDistanceType = settings.health and Enum.HumanoidDisplayDistanceType.Viewer or Enum.HumanoidDisplayDistanceType.Subject
         end
@@ -2224,7 +2225,6 @@ local MiscTab = SettingsSection:CreateSection("Misc")
 
 local dragConnections = {}
 local chat = false
-local spectating = false
 
 local function logChat(player, message)
     if chat then
