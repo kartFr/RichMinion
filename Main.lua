@@ -16,6 +16,8 @@ local Gui = Library.new("Karts' poorest minion gui")
 
 local spectating = false
 local camera = game.Workspace.CurrentCamera
+local illuLabels = {}
+local modLabels = {}
 local mods = {
     scroomlicious = "Moderator"
 }
@@ -191,8 +193,10 @@ local function watchLeaderboard(textLabel)
             else
                 if v.Backpack:FindFirstChild("Observe") then
                     textLabel.TextColor3 = Color3.fromHex(settings.illuLeaderboard)
+                    table.insert(modLabels, textLabel)
                 elseif v.Character and v.Character:FindFirstChild("Observe") then
                     textLabel.TextColor3 = Color3.fromHex(settings.illuLeaderboard)
+                    table.insert(illuLabels, textLabel)
                 end
             end
 
@@ -668,6 +672,7 @@ RunService.Heartbeat:Connect(function()
     for i,v in pairs(game.Workspace.Live:GetChildren()) do
         if v:FindFirstChild("Humanoid") then
             v.Humanoid.HealthDisplayDistance = not spectating and 100 or math.huge
+            v.Humanoid.NameDisplayDistance = not spectating and 100 or math.huge
             v.Humanoid.HealthDisplayType = settings.health and Enum.HumanoidHealthDisplayType.AlwaysOn or Enum.HumanoidHealthDisplayType.AlwaysOff
             v.Humanoid.DisplayDistanceType = settings.health and Enum.HumanoidDisplayDistanceType.Viewer or Enum.HumanoidDisplayDistanceType.Subject
         end
@@ -1369,7 +1374,7 @@ local function applyEsp(instance)
         return
     end
 
-    if instance:IsA("MeshPart") or instance:IsA("UnionOperation") then
+    if ((instance:IsA("MeshPart") and trinketMeshes[instance.MeshId]) or (instance:IsA("UnionOperation") and instance.Color == Color3.fromRGB(111, 113, 125))) and instance:FindFirstChild("ParticleEmitter")  then
         if settings.common then
             local esp = Assets.Esp:Clone()
             esp.Adornee = instance
@@ -1386,6 +1391,8 @@ local function applyEsp(instance)
         else
             espHolder.common[instance] = false
         end
+
+        return
     end
 end
 
@@ -1436,13 +1443,7 @@ EspSection:CreateToggle({
                     local esp = Assets.Esp:Clone()
                     esp.Adornee = i
                     esp.TextLabel.TextColor3 = Color3.fromHex(settings.commonColor)
-
-                    if i:IsA("MeshPart") or i:IsA("UnionOperation") then
-                        esp.TextLabel.Text = i:IsA("UnionOperation") and "[Idol of the Forgotten]" or trinketMeshes[i.MeshId]
-                    else
-                        esp.TextLabel.TextColor3 = Color3.fromRGB(255, 0, 255)
-                        esp.TextLabel.Text = "NOT IN DATABSE PLS HELPPPASGASGJASGJASGJ"
-                    end
+                    esp.TextLabel.Text = i:IsA("UnionOperation") and "[Idol of the Forgotten]" or trinketMeshes[i.MeshId]
 
                     esp.Parent = i
                     espHolder.common[i] = esp
@@ -2751,9 +2752,15 @@ miscColorTab:CreateColorPicker({
 miscColorTab:CreateColorPicker({
     name = "Mod leaderboard color",
     default = Color3.fromHex(settings.modLeaderboard),
-    resetColor = Color3.fromRGB(0, 150, 255),
+    resetColor = Color3.fromRGB(0, 255, 0),
     callback = function(color)
         settings.modLeaderboard = color:ToHex()
+
+        for i,v in ipairs(modLabels) do
+            if v then
+                v.TextColor3 = color
+            end
+        end
     end
 })
 
@@ -2763,5 +2770,11 @@ miscColorTab:CreateColorPicker({
     resetColor = Color3.fromRGB(0, 150, 255),
     callback = function(color)
         settings.illuLeaderboard = color:ToHex()
+
+        for i,v in ipairs(illuLabels) do
+            if v then
+                v.TextColor3 = color
+            end
+        end
     end
 })
