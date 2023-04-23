@@ -119,7 +119,7 @@ function UiLibrary.new(name: string)
 
                 if input.KeyCode.Name == hideBind[2] and secondaryDown then
                     mainGui.Enabled = not mainGui.Enabled
-                    
+
                     if currentHighlight then
                         currentHighlight.ImageColor3 = unhighlightColor
                         currentHighlight = false
@@ -151,7 +151,7 @@ function UiLibrary.new(name: string)
     }, UiLibrary)
 end
 
-function UiLibrary:RebindHide(keyCode: {secondaryKey: Enum.KeyCode, primaryKey: Enum.KeyCode})
+function UiLibrary:RebindHide(keyCode)
     justRebinded = true
     hideBind = keyCode["2"] and {[2] = keyCode["2"]} or keyCode
 end
