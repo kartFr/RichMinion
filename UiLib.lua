@@ -44,8 +44,6 @@ local bindBlacklist = {
     [Enum.KeyCode.Backquote.Name] = true,
 }
 
-
-
 local function functionPasser(func, ...)
     local currentThread = freeThread
     freeThread = nil
@@ -838,3 +836,5 @@ function TextElement:AddKeybind(config)
     self.callback = config.keyPressed
     makeKeybind(self.textLabel, self, config)
 end
+
+return UiLibrary
