@@ -1,4 +1,4 @@
-local UiLibrary = {}
+local UiLibrary = {} -- Don't use not supported for other scripts
 UiLibrary.__index = UiLibrary
 
 local RunService = game:GetService("RunService")
@@ -193,6 +193,12 @@ function UiLibrary:ChangeTheme(newTheme: Color3)
     end
 
     theme = newTheme
+end
+
+function UiLibrary.addBlacklist(keybinds)
+    for i,v in pairs(keybinds) do
+        bindBlacklist[v] = true
+    end
 end
 
 local Tabs = {}
