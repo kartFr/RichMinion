@@ -846,3 +846,5 @@ function TextElement:AddKeybind(config)
     self.callback = config.keyPressed
     makeKeybind(self.textLabel, self, config)
 end
+
+return UiLibrary
