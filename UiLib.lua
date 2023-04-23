@@ -1,4 +1,4 @@
-local UiLibrary = {} -- Don't use not supported for other scripts
+local UiLibrary = {}
 UiLibrary.__index = UiLibrary
 
 local RunService = game:GetService("RunService")
@@ -119,10 +119,20 @@ function UiLibrary.new(name: string)
 
                 if input.KeyCode.Name == hideBind[2] and secondaryDown then
                     mainGui.Enabled = not mainGui.Enabled
+                    
+                    if currentHighlight then
+                        currentHighlight.ImageColor3 = unhighlightColor
+                        currentHighlight = false
+                    end
                 end
             else
                 if input.KeyCode.Name == hideBind[2] then
                     mainGui.Enabled = not mainGui.Enabled
+
+                    if currentHighlight then
+                        currentHighlight.ImageColor3 = unhighlightColor
+                        currentHighlight = false
+                    end
                 end
             end
         end
@@ -836,5 +846,3 @@ function TextElement:AddKeybind(config)
     self.callback = config.keyPressed
     makeKeybind(self.textLabel, self, config)
 end
-
-return UiLibrary
