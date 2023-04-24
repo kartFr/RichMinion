@@ -249,6 +249,17 @@ function UiLibrary:CreateTab(name)
         window.Visible = true
     end)
 
+    if currentColorPickerButton then
+        for i,v in pairs(colorPickerConnections) do
+            v:Disconnect()
+            colorPickerConnections[i] = nil
+        end
+        
+        currentColorPickerButton.ImageButton.Border.ImageColor3 = disabledColor
+        currentColorPickerButton = nil
+        currentColorPicker:Destroy()
+    end
+
     return setmetatable({
         window = window
     }, Tabs)
@@ -412,7 +423,7 @@ local function makeKeybind(parent, self, config)
     keybind.Button.TextColor3 = theme
     keybind.Parent = parent
     table.insert(text, keybind.Button)
-    
+
     if config.default then
         makeBind(self)
 
