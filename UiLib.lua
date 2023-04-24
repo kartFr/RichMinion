@@ -409,8 +409,10 @@ local function makeKeybind(parent, self, config)
     self.secondaryDown = false
     self.bind = config.default and {config.default["1"], config.default["2"]} or {}
 
+    keybind.Button.TextColor3 = theme
     keybind.Parent = parent
-
+    table.insert(text, keybind.Button)
+    
     if config.default then
         makeBind(self)
 
