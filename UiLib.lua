@@ -73,7 +73,6 @@ function UiLibrary.new(name: string)
 
     table.insert(borders, mainGui.Frame.Border)
     table.insert(borders, mainGui.Frame.Tabs.Border)
-    table.insert(text, mainGui.Frame.TopBar.GuiName)
 
     if syn then
         syn.protect_gui(mainGui)
@@ -161,8 +160,6 @@ function UiLibrary:ChangeTheme(newTheme: Color3)
         if v:IsA("TextButton") then
             if v.BackgroundColor3 == theme then
                 v.BackgroundColor3 = newTheme
-            else
-                v.TextColor3 = newTheme
             end
         end
     end
@@ -177,7 +174,6 @@ function UiLibrary:ChangeTheme(newTheme: Color3)
 
     for i,v in pairs(sliders) do
         v.Frame.BackgroundColor3 = newTheme
-        v.TextLabel.TextColor3 = newTheme
     end
 
     if currentColorPickerButton then
@@ -218,7 +214,6 @@ function UiLibrary:CreateTab(name)
 
     self.tabCount += 1
     tab.Text = name
-    tab.TextColor3 = theme
     tab.Parent = mainGui.Frame.Tabs.Holder
     window.Parent = mainGui.Frame.Windows
 
@@ -241,7 +236,7 @@ function UiLibrary:CreateTab(name)
             v.Visible = false
         end
 
-        self.currentTab.TextColor3 = theme
+        self.currentTab.TextColor3 = Color3.fromRGB(255, 255, 255)
         self.currentTab.BackgroundColor3 = disabledColor
         self.currentTab = tab
         tab.TextColor3 = disabledColor
