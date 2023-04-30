@@ -550,7 +550,7 @@ local function makeSlider(sliderBar, config)
                 local precentage = math.clamp((input.Position.X - sliderBar.Frame.AbsolutePosition.X) / sliderBar.TextLabel.AbsoluteSize.X, 0, 1)
                 local previousValue = value
                 local newValue = precentage * (minMax[2] - minMax[1]) + minMax[1]
-                value = rounding > 1 and round(newValue, rounding) or math.floor(newValue + .5)
+                value = rounding > 0 and round(newValue, rounding) or math.floor(newValue + .5)
 
                 if value ~= previousValue then
                     updateSliderSize(sliderBar, value, minMax)
