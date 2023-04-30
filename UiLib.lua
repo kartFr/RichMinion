@@ -292,8 +292,6 @@ end
 function Tabs:CreateSection(name)
     local section = guiAssets.Section:Clone()
 
-    table.insert(text, section.Frame.NameGui.TextLabel)
-
     section.Parent = getSide(self.window, false)
     section.Frame.NameGui.TextLabel.Text = name
     section.Frame.NameGui.TextLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -326,7 +324,6 @@ function Section:CreateToggle(config)
     }
 
     table.insert(toggles, toggle)
-    table.insert(text, toggle.TextLabel)
 
     toggle.TextLabel.Text = config.name
     toggle.TextLabel.TextColor3 = theme
@@ -623,7 +620,6 @@ function Section:CreateSlider(config)
     slider.TextLabel.Size = UDim2.new(1, -15, 0, 15)
     sliderElement.Parent = slider
     slider.Parent = self.section.Frame.Holder
-    table.insert(text, slider.TextLabel)
     updateSizes(self.section)
     makeSlider(sliderElement, config)
 end
@@ -701,9 +697,8 @@ function Section:CreateColorPicker(config)
     colorPicker.ImageButton.BackgroundColor3 = default
     colorPicker.Parent = self.section.Frame.Holder
     updateSizes(self.section)
-    table.insert(text, colorPicker.TextLabel)
 
-    if (not config.callbackOnCreation and config.callbackOnCreation ~= false) or config.callbackOnCreation then
+    if config.callbackOnCreation then
         spawnWithReuse(config.callback, default)
     end
 
@@ -839,7 +834,7 @@ function Section:CreateText(name)
     textLabel.TextLabel.Size = UDim2.new(1, -15, 1, 0)
     textLabel.Size = UDim2.new(1, 0, 0, 20)
     textLabel.Parent = self.section.Frame.Holder
-    table.insert(text, textLabel.TextLabel)
+
     updateSizes(self.section)
 
     return setmetatable({
