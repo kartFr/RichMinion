@@ -192,6 +192,10 @@ function UiLibrary:ChangeTheme(newTheme: Color3)
         end
     end
 
+    for i,v in pairs(mainGui.Frame.Windows:GetChildren()) do
+        v.ScrollBarImageColor3 = newTheme
+    end
+
     if currentHighlight then
         currentHighlight = newTheme
     end
