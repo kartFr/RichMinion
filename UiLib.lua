@@ -3,15 +3,24 @@ UiLibrary.__index = UiLibrary
 
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TextService = game:GetService("TextService")
 
-local guiAssets = game:GetObjects("rbxassetid://11260223308")[1]
+local guiAssets = game:GetObjects("rbxassetid://13337778865")[1]
 local disabledColor = Color3.fromRGB(27, 27, 27)
 local unhighlightColor = Color3.fromRGB(41, 41, 41)
+local dropUnselectedColor = Color3.fromRGB(100, 100, 100)
 local theme = Color3.new(1,1,1)
 local sliders = {}
 local toggles = {}
+local allTexts = {}
+local guiFont = Enum.Font.Gotham
+local fontSizes = {
+    [Enum.Font.Gotham] = 15,
+    [Enum.Font.SourceSans] = 15,
+}
 local colorPickerConnections = {}
 local tempPickerConnections = {}
+local dropDowns = {}
 local currentColorPicker
 local currentColorPickerButton
 local justRebinded = false
@@ -70,11 +79,15 @@ function UiLibrary.new(name: string)
     local secondaryDown = false
     mainGui = guiAssets.ScreenGui:Clone()
     mainGui.Frame.TopBar.GuiName.Text = name
+    mainGui.Frame.TopBar.GuiName.Font = guiFont
+    mainGui.Frame.TopBar.GuiName.TextSize = fontSizes[guiFont]
 
     table.insert(borders, mainGui.Frame.Border)
     table.insert(borders, mainGui.Frame.Tabs.Border)
+    table.insert(text, mainGui.Frame.TopBar.GuiName)
+    table.insert(allTexts, mainGui.Frame.TopBar.GuiName)
 
-    if syn then
+    if syn and syn.protect_gui then
         syn.protect_gui(mainGui)
         mainGui.Parent = game.CoreGui
     elseif gethui then
@@ -196,6 +209,30 @@ function UiLibrary:ChangeTheme(newTheme: Color3)
         v.ScrollBarImageColor3 = newTheme
     end
 
+    for i,v in pairs(dropDowns) do
+        v.Main.Options.ScrollBarImageColor3 = newTheme
+
+        if v.Main.Border.ImageColor3 == theme then
+            v.Main.Border.ImageColor3 = newTheme
+        end
+
+        for i,v in pairs(v.Main.Options:GetChildren()) do
+            if v:IsA("TextButton") and v.TextColor3 == theme then
+                v.TextColor3 = newTheme
+            end
+        end
+    end
+
+    for i,v in pairs(mainGui.Frame.Tabs.Holder:GetChildren()) do
+        if v:IsA("TextButton") then
+            if v.TextColor3 == disabledColor then
+                v.BackgroundColor3 = newTheme
+            else
+                v.TextColor3 = newTheme
+            end
+        end
+    end
+
     if currentHighlight then
         currentHighlight = newTheme
     end
@@ -209,6 +246,17 @@ function UiLibrary.addBlacklist(keybinds)
     end
 end
 
+function UiLibrary:ChangeFont(font)
+    local size = fontSizes[guiFont]
+    guiFont = font
+
+    for i,v in pairs(allTexts) do
+        v.Font = guiFont
+        v.TextSize = size
+    end
+end
+
+
 local Tabs = {}
 Tabs.__index = Tabs
 
@@ -218,8 +266,12 @@ function UiLibrary:CreateTab(name)
 
     self.tabCount += 1
     tab.Text = name
+    tab.Font = guiFont
+    tab.TextColor3 = theme
+    tab.TextSize = fontSizes[guiFont]
     tab.Parent = mainGui.Frame.Tabs.Holder
     window.Parent = mainGui.Frame.Windows
+    table.insert(allTexts, tab)
 
     for i,v in ipairs(mainGui.Frame.Tabs.Holder:GetChildren()) do
         if v:IsA("TextButton") then
@@ -240,7 +292,7 @@ function UiLibrary:CreateTab(name)
             v.Visible = false
         end
 
-        self.currentTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+        self.currentTab.TextColor3 = theme
         self.currentTab.BackgroundColor3 = disabledColor
         self.currentTab = tab
         tab.TextColor3 = disabledColor
@@ -284,23 +336,91 @@ local function getSide(window: ScrollingFrame, shortestSide: boolean)
 end
 
 local function updateSizes(section)
-    section.Size = UDim2.new(1, 0, 0, section.Frame.Holder.UIListLayout.AbsoluteContentSize.Y + 17)
-    section.Parent.Parent.CanvasSize = UDim2.new(0, 0, 0, getSide(section.Parent.Parent, true).UIListLayout.AbsoluteContentSize.Y + 10)
+    section.Size = UDim2.new(1, 0, 0, section.Frame.Frame.Holder.UIListLayout.AbsoluteContentSize.Y + 23)
+    local newSize = getSide(section.Parent.Parent, true).UIListLayout.AbsoluteContentSize.Y + 3
+    section.Parent.Parent.CanvasSize = UDim2.new(0, 0, 0, newSize)
+
+    if 249 < newSize then
+        section.Parent.Parent.Right.UIPadding.PaddingRight = UDim.new(0, 8)
+    else
+        section.Parent.Parent.Right.UIPadding.PaddingRight = UDim.new(0, 0)
+    end
 end
 
 function Tabs:CreateSection(name)
     local section = guiAssets.Section:Clone()
+    local textSize = TextService:GetTextSize(name, 15, guiFont, Vector2.zero).X
 
     section.Parent = getSide(self.window, false)
-    section.Frame.NameGui.TextLabel.Text = name
-    section.Frame.NameGui.TextLabel.TextYAlignment = Enum.TextYAlignment.Top
-    section.Frame.NameGui.TextLabel.TextColor3 = theme
-    section.Frame.NameGui.Size = UDim2.new(0, section.Frame.NameGui.TextLabel.TextBounds.X + 6, 0, 20)
-    section.Frame.Frame.Border.Size = UDim2.new(0, section.Frame.NameGui.TextLabel.TextBounds.X + 8, 0, 20)
+    section.Frame.Frame.NameGui.TextLabel.Text = name
+    section.Frame.Frame.NameGui.TextLabel.Font = guiFont
+    section.Frame.Frame.NameGui.TextLabel.TextSize = fontSizes[guiFont]
+    section.Frame.Frame.NameGui.TextLabel.TextYAlignment = Enum.TextYAlignment.Top
+    section.Frame.Frame.NameGui.TextLabel.TextColor3 = theme
+    section.Frame.Frame.NameGui.Size = UDim2.new(0, textSize + 6, 0, 15)
+    section.Frame.Frame.Frame.Border.Size = UDim2.new(0, textSize + 8, 0, 20)
+    table.insert(allTexts, section.Frame.Frame.NameGui.TextLabel)
 
     return setmetatable({
         section = section
     }, Section)
+end
+
+local ViewportElement = {}
+ViewportElement.__index = ViewportElement
+
+function Tabs:CreateViewport(name)
+    local viewport = guiAssets.Viewport:Clone()
+
+    viewport.TextLabel.Text = name
+    viewport.TextLabel.Font = guiFont
+    viewport.TextLabel.TextSize = fontSizes[guiFont]
+    viewport.TextLabel.TextColor3 = theme
+    viewport.ViewportFrame.Border.ImageColor3 = theme
+    viewport.Parent = getSide(self.window, false)
+
+    table.insert(borders, viewport.ViewportFrame.Border)
+    table.insert(allTexts, viewport.TextLabel)
+
+    return setmetatable({
+        viewport = viewport
+    }, ViewportElement)
+end
+
+function ViewportElement:SetViewport(instance)
+    if not instance:IsA("Model") or not instance:FindFirstChild("HumanoidRootPart") then
+        return
+    end
+
+    if self.connection then
+        self.connection:Disconnect()
+    end
+
+    local camera = self.viewport.ViewportFrame:FindFirstChild("Camera")
+    local viewing = instance:Clone()
+    local humanoidRootPart = viewing:FindFirstChild("HumanoidRootPart")
+    humanoidRootPart.Anchored = true
+
+    if not camera then
+        camera = Instance.new("Camera")
+        camera.Focus = CFrame.identity
+        camera.Parent = self.viewport.ViewportFrame
+        self.viewport.ViewportFrame.CurrentCamera = camera
+    else
+        for i,v in pairs(camera:GetChildren()) do
+            v:Destroy()
+        end
+    end
+
+    viewing.PrimaryPart = humanoidRootPart
+    viewing:SetPrimaryPartCFrame(CFrame.identity)
+    local extentsSize = viewing:GetExtentsSize()
+    camera.CFrame = CFrame.new(0, 0, extentsSize.Y)
+    viewing.Parent = camera
+
+    self.connection = RunService.Heartbeat:Connect(function()
+        viewing:SetPrimaryPartCFrame(viewing.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(1), 0))
+    end)
 end
 
 local ToggleElement = {}
@@ -311,8 +431,8 @@ function Section:CreateToggle(config)
         {
             name: string
             default: boolean?
-            callbackOnCreation = false?
-            callback = () -> ()
+            callbackOnCreation: boolean?
+            callback: () -> ()
         }
     ]]
     local toggle = guiAssets.Toggle:Clone()
@@ -326,9 +446,12 @@ function Section:CreateToggle(config)
 
     toggle.TextLabel.Text = config.name
     toggle.TextLabel.TextColor3 = theme
+    toggle.TextLabel.Font = guiFont
+    toggle.TextLabel.TextSize = fontSizes[guiFont]
     toggle.ImageButton.BackgroundColor3 = self.boolean and theme or disabledColor
-    toggle.Parent = self.section.Frame.Holder
+    toggle.Parent = self.section.Frame.Frame.Holder
     updateSizes(self.section)
+    table.insert(allTexts, toggle.TextLabel)
 
     if config.default then
         toggle.ImageButton.BackgroundColor3 = theme
@@ -417,16 +540,22 @@ local function makeKeybind(parent, self, config)
     self.bind = config.default and {config.default["1"], config.default["2"]} or {}
 
     keybind.Button.TextColor3 = theme
+    keybind.Button.Font = guiFont
+    keybind.Button.TextSize = fontSizes[guiFont]
     keybind.Parent = parent
     table.insert(text, keybind.Button)
+    table.insert(allTexts,  keybind.Button)
 
     if config.default then
         makeBind(self)
 
         if self.bind[2] or self.bind[1] then
-            keybind.Button.Text = self.bind[1] and secondaryBinds[self.bind[1]] .. " + " .. self.bind[2] or self.bind[2]
+            local keybindText = self.bind[1] and secondaryBinds[self.bind[1]] .. " + " .. self.bind[2] or self.bind[2]
+            keybind.Button.Text = keybindText
+            keybind.Size = UDim2.new(0, TextService:GetTextSize(keybindText, 15, guiFont, Vector2.zero).X + 8, 0, 20)
         else
             keybind.Button.Text = "None"
+            keybind.Size = UDim2.new(0, TextService:GetTextSize("None", 15, guiFont, Vector2.zero).X + 8, 0, 20)
         end
     end
 
@@ -435,6 +564,7 @@ local function makeKeybind(parent, self, config)
             self.bind = {}
             self.secondaryDown = false
             keybind.Button.Text = "..."
+            keybind.Size = UDim2.new(0, TextService:GetTextSize("...", 15, guiFont, Vector2.zero).X + 8, 0, 20)
 
             for i,v in pairs(self.bindConnections) do
                 v:Disconnect()
@@ -443,13 +573,27 @@ local function makeKeybind(parent, self, config)
             
             getInputs = UserInputService.InputBegan:Connect(function(input, gameProccessed)
                 if not gameProccessed then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        self.bind = {}
+                        getInputs:Disconnect()
+                        getInputs = false
+                        keybind.Button.Text = "None"
+                        keybind.Size = UDim2.new(0, TextService:GetTextSize("None", 15, guiFont, Vector2.zero).X + 8, 0, 20)
+
+                        if config.callback then
+                            config.callback({})
+                        end
+                    end
+
                     if bindBlacklist[input.KeyCode.Name] then
                         return
                     end
 
                     if secondaryBinds[input.KeyCode.Name] then
                         self.bind[1] = input.KeyCode.Name
-                        keybind.Button.Text = secondaryBinds[input.KeyCode.Name] .. " + ..."
+                        local keybindText = secondaryBinds[input.KeyCode.Name] .. " + ..."
+                        keybind.Button.Text = keybindText
+                        keybind.Size = UDim2.new(0, TextService:GetTextSize(keybindText, 15, guiFont, Vector2.zero).X + 8, 0, 20)
                     else
                         self.bind[2] = input.KeyCode.Name
                     end
@@ -457,24 +601,15 @@ local function makeKeybind(parent, self, config)
                     if self.bind[2] then
                         getInputs:Disconnect()
                         getInputs = false
-                        keybind.Button.Text = self.bind[1] and secondaryBinds[self.bind[1]] .. " + " .. self.bind[2] or self.bind[2]
+                        local keybindText = self.bind[1] and secondaryBinds[self.bind[1]] .. " + " .. self.bind[2] or self.bind[2]
+                        keybind.Button.Text = keybindText
+                        keybind.Size = UDim2.new(0, TextService:GetTextSize(keybindText, 15, guiFont, Vector2.zero).X + 8, 0, 20)
 
                         if config.callback then
                             config.callback(self.bind)
                         end
 
                         makeBind(self)
-                    end
-
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        self.bind = {}
-                        getInputs:Disconnect()
-                        getInputs = false
-                        keybind.Button.Text = "None"
-
-                        if config.callback then
-                            config.callback({})
-                        end
                     end
                 end
             end)
@@ -483,6 +618,7 @@ local function makeKeybind(parent, self, config)
 
     keybind.Button.MouseButton2Down:Connect(function()
         keybind.Button.Text = "None"
+        keybind.Size = UDim2.new(0, TextService:GetTextSize("None", 15, guiFont, Vector2.zero).X + 8, 0, 20)
         self.secondaryDown = false
         self.bind = {}
 
@@ -496,15 +632,17 @@ local function makeKeybind(parent, self, config)
             getInputs = false
         end
 
-        config.callback(self.bind)
+        if config.callback then
+            config.callback(self.bind)
+        end
     end)
 end
 
 function ToggleElement:AddKeybind(config)
     --[[
         {
-            default = {secondary bind, primary bind}
-            callback = () -> ()?
+            default: {secondary bind, primary bind}
+            callback: () -> ()?
         }
     ]]
     makeKeybind(self.toggle, self, config)
@@ -530,12 +668,24 @@ local function makeSlider(sliderBar, config)
 
     sliderBar.Frame.BackgroundColor3 = theme
     sliderBar.TextLabel.TextColor3 = theme
+    sliderBar.TextLabel.Font = guiFont
+    sliderBar.TextLabel.TextSize = fontSizes[guiFont]
 
     updateSliderSize(sliderBar, value, minMax)
     table.insert(sliders, sliderBar)
+    table.insert(allTexts,  sliderBar.TextLabel)
 
-    sliderBar.TextLabel.MouseButton1Down:Connect(function()
+    sliderBar.TextLabel.MouseButton1Down:Connect(function(X, Y)
         sliding = true
+        local precentage = math.clamp((X - sliderBar.Frame.AbsolutePosition.X) / sliderBar.TextLabel.AbsoluteSize.X, 0, 1)
+        local previousValue = value
+        local newValue = precentage * (minMax[2] - minMax[1]) + minMax[1]
+        value = rounding > 0 and round(newValue, rounding) or math.floor(newValue + .5)
+
+        if value ~= previousValue then
+            updateSliderSize(sliderBar, value, minMax)
+            config.callback(value)
+        end
 
         endConnection = UserInputService.InputEnded:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -551,9 +701,9 @@ local function makeSlider(sliderBar, config)
 
         slidingConnection = UserInputService.InputChanged:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseMovement then
-                local precentage = math.clamp((input.Position.X - sliderBar.Frame.AbsolutePosition.X) / sliderBar.TextLabel.AbsoluteSize.X, 0, 1)
-                local previousValue = value
-                local newValue = precentage * (minMax[2] - minMax[1]) + minMax[1]
+                precentage = math.clamp((input.Position.X - sliderBar.Frame.AbsolutePosition.X) / sliderBar.TextLabel.AbsoluteSize.X, 0, 1)
+                previousValue = value
+                newValue = precentage * (minMax[2] - minMax[1]) + minMax[1]
                 value = rounding > 0 and round(newValue, rounding) or math.floor(newValue + .5)
 
                 if value ~= previousValue then
@@ -598,7 +748,7 @@ function ToggleElement:AddSlider(config)
 
     self.toggle.Size = UDim2.new(1, 0, 0, 40)
     slider.Parent = self.toggle
-    updateSizes(self.toggle.Parent.Parent.Parent)
+    updateSizes(self.toggle.Parent.Parent.Parent.Parent)
     makeSlider(slider, config)
 end
 
@@ -616,9 +766,13 @@ function Section:CreateSlider(config)
     local sliderElement = guiAssets.SliderElement:Clone()
 
     slider.TextLabel.Text = config.name
+    slider.TextLabel.Font = guiFont
+    slider.TextLabel.TextSize = fontSizes[guiFont]
     slider.TextLabel.Size = UDim2.new(1, -15, 0, 15)
     sliderElement.Parent = slider
-    slider.Parent = self.section.Frame.Holder
+    slider.Parent = self.section.Frame.Frame.Holder
+
+    table.insert(allTexts, slider.TextLabel)
     updateSizes(self.section)
     makeSlider(sliderElement, config)
 end
@@ -634,10 +788,13 @@ function Section:CreateButton(config)
     local button = guiAssets.Button:Clone()
 
     button.ImageButton.Text = config.name
+    button.ImageButton.Font = guiFont
+    button.ImageButton.TextSize = fontSizes[guiFont]
     button.ImageButton.TextColor3 = theme
-    button.Parent = self.section.Frame.Holder
+    button.Parent = self.section.Frame.Frame.Holder
     updateSizes(self.section)
     table.insert(text, button.ImageButton)
+    table.insert(allTexts,  button.ImageButton)
 
     button.ImageButton.MouseButton1Down:Connect(function()
         button.ImageButton.TextColor3 = disabledColor
@@ -693,9 +850,12 @@ function Section:CreateColorPicker(config)
     local hue, saturation, value = default:ToHSV()
 
     colorPicker.TextLabel.Text = config.name
+    colorPicker.TextLabel.Font = guiFont
+    colorPicker.TextLabel.TextSize = fontSizes[guiFont]
     colorPicker.ImageButton.BackgroundColor3 = default
-    colorPicker.Parent = self.section.Frame.Holder
+    colorPicker.Parent = self.section.Frame.Frame.Holder
     updateSizes(self.section)
+    table.insert(allTexts,  colorPicker.TextLabel)
 
     if config.callbackOnCreation then
         spawnWithReuse(config.callback, default)
@@ -752,6 +912,8 @@ function Section:CreateColorPicker(config)
             currentColorPicker.Slider.Border.ImageColor3 = theme
             currentColorPicker.Gradient.Border.ImageColor3 = theme
             currentColorPicker.Gradient.Cursor.Border.ImageColor3 = theme
+            currentColorPicker.Frame.Button.Font = guiFont
+            currentColorPicker.Frame.Button.TextSize = fontSizes[guiFont]
             currentColorPicker.Frame.Button.PlaceholderColor3 = theme
             currentColorPicker.Frame.Button.TextColor3 = theme
             updatePicker(colorPicker, hue, saturation, value)
@@ -831,9 +993,12 @@ function Section:CreateText(name)
 
     textLabel.TextLabel.Text = name
     textLabel.TextLabel.Size = UDim2.new(1, -15, 1, 0)
+    textLabel.TextLabel.Font = guiFont
+    textLabel.TextLabel.TextSize = fontSizes[guiFont]
     textLabel.Size = UDim2.new(1, 0, 0, 20)
-    textLabel.Parent = self.section.Frame.Holder
+    textLabel.Parent = self.section.Frame.Frame.Holder
 
+    table.insert(allTexts,  textLabel.TextLabel)
     updateSizes(self.section)
 
     return setmetatable({
@@ -852,6 +1017,242 @@ function TextElement:AddKeybind(config)
 
     self.callback = config.keyPressed
     makeKeybind(self.textLabel, self, config)
+end
+
+local DropdownElement = {}
+DropdownElement.__index = DropdownElement
+
+function Section:CreateDropDown(config)
+    --[[
+        {   
+            name: string
+            default: string?
+            options: {}
+            callback: () -> ()
+        }
+    ]]
+    local dropTable = {}
+
+    dropTable.options = 0
+    dropTable.selected = false
+    dropTable.opened = false
+    dropTable.dropdown = guiAssets.Dropdown:Clone()
+    dropTable.callback = config.callback
+    
+    dropTable.dropdown.Frame.TextLabel.Text = config.name
+    dropTable.dropdown.Frame.TextLabel.Font = guiFont
+    dropTable.dropdown.Frame.TextLabel.TextSize = fontSizes[guiFont]
+    dropTable.dropdown.Parent = self.section.Frame.Frame.Holder
+    dropTable.dropdown.Main.ImageButton.ImageButton.ImageLabel.ImageColor3 = theme
+    dropTable.dropdown.Main.ImageButton.ImageButton.Font = guiFont
+    dropTable.dropdown.Main.ImageButton.ImageButton.TextSize = fontSizes[guiFont]
+    dropTable.dropdown.Main.Seperator.ImageColor3 = theme
+    table.insert(dropDowns, dropTable.dropdown)
+    table.insert(borders, dropTable.dropdown.Main.ImageButton.ImageButton.ImageLabel)
+    table.insert(borders, dropTable.dropdown.Main.Seperator)
+    table.insert(text, dropTable.dropdown.Main.ImageButton.ImageButton)
+    table.insert(allTexts, dropTable.dropdown.Main.ImageButton.ImageButton)
+    table.insert(allTexts, dropTable.dropdown.Frame.TextLabel)
+    updateSizes(self.section)
+
+    dropTable.dropdown.Main.ImageButton.MouseEnter:Connect(function()
+        dropTable.dropdown.Main.Border.ImageColor3 = theme
+    end)
+
+    dropTable.dropdown.Main.ImageButton.MouseLeave:Connect(function()
+        if not dropTable.opened then
+            dropTable.dropdown.Main.Border.ImageColor3 = unhighlightColor
+        end
+    end)
+
+    dropTable.dropdown.Main.ImageButton.MouseButton1Down:Connect(function()
+        dropTable.opened = not dropTable.opened
+
+        if dropTable.opened then
+            dropTable.dropdown.Main.ImageButton.ImageButton.ImageLabel.Image = "http://www.roblox.com/asset/?id=13337486257"
+            dropTable.dropdown.Main.Seperator.Visible = true
+            dropTable.dropdown.Main.Options.Visible = true
+            dropTable.dropdown.Size = UDim2.new(1, 0, 0, math.min(31 + (15 * dropTable.options), 106))
+            dropTable.dropdown.Main.Size = UDim2.new(1, -8, 0, math.min(16 + (15 * dropTable.options), 90))
+        else
+            dropTable.dropdown.Main.ImageButton.ImageButton.ImageLabel.Image = "http://www.roblox.com/asset/?id=13337479807"
+            dropTable.dropdown.Main.Seperator.Visible = false
+            dropTable.dropdown.Main.Options.Visible = false
+            dropTable.dropdown.Size = UDim2.new(1, 0, 0, 30)
+            dropTable.dropdown.Main.Size = UDim2.new(1, -8, 0, 15)
+        end
+
+        updateSizes(self.section)
+    end)
+    
+    for i,v in pairs(config.options) do
+        local option = guiAssets.Option:Clone()
+        option.Text = v
+        option.Font = guiFont
+        option.TextSize = fontSizes[guiFont]
+        option.TextColor3 = dropUnselectedColor
+        option.Parent = dropTable.dropdown.Main.Options
+        dropTable.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, dropTable.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
+        dropTable.options += 1
+
+        table.insert(allTexts, option)
+
+        if v == config.default then
+            dropTable.selected = option
+        elseif not config.default and not dropTable.selected then
+            dropTable.selected = option
+            option.TextColor3 = theme
+            dropTable.dropdown.Main.ImageButton.ImageButton.Text = v
+            spawnWithReuse(config.callback, v)
+        end
+
+        option.MouseEnter:Connect(function()
+            option.TextColor3 = theme
+        end)
+
+        option.MouseLeave:Connect(function()
+            if dropTable.selected ~= option then
+                option.TextColor3 = dropUnselectedColor
+            end
+        end)
+
+        option.MouseButton1Down:Connect(function()
+            if dropTable.selected ~= option then
+                dropTable.selected.TextColor3 = dropUnselectedColor
+                dropTable.selected = option
+                option.TextColor3 = theme
+                dropTable.dropdown.Main.ImageButton.ImageButton.Text = v
+                config.callback(v)
+            end
+        end)
+    end
+
+    return setmetatable(dropTable, DropdownElement)
+end
+
+function DropdownElement:Add(optionText)
+    local option = guiAssets.Option:Clone()
+    option.Text = optionText
+    option.Font = guiFont
+    option.TextSize = fontSizes[guiFont]
+    option.TextColor3 = dropUnselectedColor
+    option.Parent = self.dropdown.Main.Options
+    self.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, self.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
+    self.options += 1
+
+    table.insert(allTexts, option)
+
+    option.MouseEnter:Connect(function()
+        option.TextColor3 = theme
+    end)
+
+    option.MouseLeave:Connect(function()
+        if self.selected ~= option then
+            option.TextColor3 = dropUnselectedColor
+        end
+    end)
+
+    option.MouseButton1Down:Connect(function()
+        if self.selected ~= option then
+            self.selected.TextColor3 = dropUnselectedColor
+            self.selected = option
+            option.TextColor3 = theme
+            self.dropdown.Main.ImageButton.ImageButton.Text = optionText
+            self.callback(optionText)
+        end
+    end)
+end
+
+function DropdownElement:Remove(option)
+    local destroyed = false
+    local newSelected
+
+    for i,v in pairs(self.dropdown.Main.Options:GetChildren()) do
+        if v:IsA("TextButton") and v.Text == option then
+            destroyed = v
+        else
+            newSelected = v
+        end
+
+        if newSelected and destroyed then
+            break
+        end
+    end
+
+    if destroyed then
+        if newSelected and self.selected == destroyed then
+            self.selected = newSelected
+            self.selected.TextColor3 = theme
+            self.dropdown.Main.ImageButton.ImageButton.Text = newSelected.Text
+
+            spawnWithReuse(self.callback, newSelected.Text)
+        end
+
+        table.insert(allTexts, destroyed)
+        destroyed:Destroy()
+        self.options -= 1
+        self.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, self.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
+
+        if self.opened then
+            self.dropdown.Size = UDim2.new(1, 0, 0, math.min(31 + (15 * self.options), 106))
+            self.dropdown.Main.Size = UDim2.new(1, -8, 0, math.min(16 + (15 * self.options), 90))
+        end
+    end
+end
+
+function Section:CreateTextbox(config)
+    --[[
+        {
+            name: string
+            placeholderText: string
+            callback: () -> ()
+        }
+    ]]
+
+    local textBox = guiAssets.Textbox:Clone()
+    local typing = false
+    
+    textBox.TextLabel.Text = config.name
+    textBox.TextLabel.Font = guiFont
+    textBox.TextLabel.TextSize = fontSizes[guiFont]
+    textBox.Frame.Textbox.PlaceholderText = config.placeholderText
+    textBox.Frame.Textbox.Font = guiFont
+    textBox.Frame.Textbox.TextSize = fontSizes[guiFont]
+    textBox.Frame.Textbox.TextColor3 = theme
+    textBox.Parent = self.section.Frame.Frame.Holder
+
+    table.insert(allTexts, textBox.TextLabel)
+    table.insert(allTexts, textBox.Frame.Textbox)
+    table.insert(text, textBox.Frame.Textbox)
+    updateSizes(self.section)
+
+    textBox.Frame.MouseEnter:Connect(function()
+        textBox.Frame.Border.ImageColor3 = theme
+    end)
+
+    textBox.Frame.MouseLeave:Connect(function()
+        if not typing then
+            textBox.Frame.Border.ImageColor3 = unhighlightColor
+        end
+    end)
+
+    textBox.Frame.Textbox.Focused:Connect(function()
+        typing = true
+    end)
+
+    textBox.Frame.Textbox.FocusLost:Connect(function(enterPressed)
+        textBox.Frame.Border.ImageColor3 = unhighlightColor
+        typing = false
+
+        if enterPressed then
+            local input = string.gsub(textBox.Frame.Textbox.Text, "^%s+", "")
+            textBox.Frame.Textbox.Text = ""
+            if input ~= "" then
+                textBox.Frame.Textbox.PlaceholderText = input
+                config.callback(input)
+            end
+        end
+    end)
 end
 
 return UiLibrary
