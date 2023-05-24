@@ -1074,6 +1074,12 @@ function Section:CreateDropDown(config)
             dropTable.dropdown.Main.Options.Visible = true
             dropTable.dropdown.Size = UDim2.new(1, 0, 0, math.min(31 + (15 * dropTable.options), 106))
             dropTable.dropdown.Main.Size = UDim2.new(1, -8, 0, math.min(16 + (15 * dropTable.options), 90))
+
+            if dropTable.options > 5 then
+                dropTable.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, dropTable.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
+            else
+                dropTable.dropdown.Main.Options.CanvasSize = UDim2.new()
+            end
         else
             dropTable.dropdown.Main.ImageButton.ImageButton.ImageLabel.Image = "http://www.roblox.com/asset/?id=13337479807"
             dropTable.dropdown.Main.Seperator.Visible = false
@@ -1102,7 +1108,6 @@ function Section:CreateDropDown(config)
         option.TextSize = fontSizes[guiFont]
         option.TextColor3 = dropUnselectedColor
         option.Parent = dropTable.dropdown.Main.Options
-        dropTable.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, dropTable.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
         dropTable.options += 1
 
         table.insert(allTexts, option)
@@ -1152,8 +1157,11 @@ function DropdownElement:Add(optionText)
     option.TextSize = fontSizes[guiFont]
     option.TextColor3 = dropUnselectedColor
     option.Parent = self.dropdown.Main.Options
-    self.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, self.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
     self.options += 1
+
+    if self.opened and self.options > 5 then
+        self.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, self.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
+    end
 
     table.insert(allTexts, option)
 
@@ -1206,11 +1214,16 @@ function DropdownElement:Remove(option)
         table.insert(allTexts, destroyed)
         destroyed:Destroy()
         self.options -= 1
-        self.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, self.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
 
         if self.opened then
             self.dropdown.Size = UDim2.new(1, 0, 0, math.min(31 + (15 * self.options), 106))
             self.dropdown.Main.Size = UDim2.new(1, -8, 0, math.min(16 + (15 * self.options), 90))
+
+            if self.options > 5 then
+                self.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, self.dropdown.Main.Options.UIListLayout.AbsoluteContentSize.Y + 1)
+            else
+                self.dropdown.Main.Options.CanvasSize = UDim2.new(0, 0, 0, 0)
+            end
         end
     end
 end
