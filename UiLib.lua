@@ -247,12 +247,11 @@ function UiLibrary.addBlacklist(keybinds)
 end
 
 function UiLibrary:ChangeFont(font)
-    local size = fontSizes[font]
-    guiFont = font
+    --local size = fontSizes[font]
 
     for i,v in pairs(allTexts) do
-        v.Font = guiFont
-        v.TextSize = size
+        v.Font = font
+        --v.TextSize = size
     end
 end
 
