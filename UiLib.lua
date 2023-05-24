@@ -1084,6 +1084,16 @@ function Section:CreateDropDown(config)
 
         updateSizes(self.section)
     end)
+
+    local hasDefault = false
+
+    if config.default then
+        for i,v in pairs(config.options) do
+            if v == config.default then
+                hasDefault = true
+            end
+        end
+    end
     
     for i,v in pairs(config.options) do
         local option = guiAssets.Option:Clone()
@@ -1099,7 +1109,9 @@ function Section:CreateDropDown(config)
 
         if v == config.default then
             dropTable.selected = option
-        elseif not config.default and not dropTable.selected then
+            dropTable.dropdown.Main.ImageButton.ImageButton.Text = v
+            option.TextColor3 = theme
+        elseif not hasDefault and not dropTable.selected then
             dropTable.selected = option
             option.TextColor3 = theme
             dropTable.dropdown.Main.ImageButton.ImageButton.Text = v
@@ -1118,7 +1130,10 @@ function Section:CreateDropDown(config)
 
         option.MouseButton1Down:Connect(function()
             if dropTable.selected ~= option then
-                dropTable.selected.TextColor3 = dropUnselectedColor
+                if dropTable.selected then
+                    dropTable.selected.TextColor3 = dropUnselectedColor
+                end
+
                 dropTable.selected = option
                 option.TextColor3 = theme
                 dropTable.dropdown.Main.ImageButton.ImageButton.Text = v
